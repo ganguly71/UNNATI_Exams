@@ -3,6 +3,28 @@
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
         <h2 class="mb-4 text-primary"><i class="bi bi-people-fill"></i> Student Roster & Performance</h2>
+        
+        <!-- ─── Filter Bar ─────────────────────────────── -->
+        <div class="row g-2 mb-3" id="filterBar">
+            <div class="col-md-4">
+                <input type="text" class="form-control form-control-sm" id="filterRoll"
+                       placeholder="Filter by Roll No...">
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control form-control-sm" id="filterName"
+                       placeholder="Filter by Name...">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm" id="filterDept"
+                       placeholder="Filter by Department...">
+            </div>
+            <div class="col-md-1 d-flex align-items-center">
+                <button class="btn btn-sm btn-outline-secondary w-100" id="clearFilters" title="Clear filters">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="table-dark">
@@ -15,9 +37,11 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="studentsTableBody">
                     {% for data in student_data %}
-                    <tr>
+                    <tr data-roll="{{ data.student.roll_no|lower }}"
+                        data-name="{{ data.student.name|lower }}"
+                        data-dept="{{ data.student.department|lower }}">
                         <td class="fw-bold text-secondary">{{ data.student.roll_no }}</td>
                         <td>{{ data.student.name }}</td>
                         <td><span class="badge bg-secondary">{{ data.student.department }}</span></td>
@@ -32,19 +56,154 @@
                             </div>
                         </td>
                         <td>
-                            <a href="{{ url_for('main.faculty_student_report', student_id=data.student.id) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-bar-chart-line"></i> View Report
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('main.faculty_student_report', student_id=data.student.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-bar-chart-line"></i> View Report
+                                </a>
+                                <!-- Edit Button (Triggers JS modal populate) -->
+                                <button class="btn btn-sm btn-outline-secondary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editStudentModal"
+                                        data-id="{{ data.student.id }}"
+                                        data-name="{{ data.student.name }}"
+                                        data-roll="{{ data.student.roll_no }}"
+                                        data-sem="{{ data.student.semester }}"
+                                        data-dept="{{ data.student.department }}">
+                                    <i class="bi bi-pencil-fill"></i> Edit
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% else %}
-                    <tr>
+                    <tr id="noStudentsRow">
                         <td colspan="6" class="text-center text-muted">No students found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        <div class="text-muted small mt-2" id="filterStatus"></div>
     </div>
 </div>
+
+<!-- Edit Student Modal -->
+<div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editStudentModalLabel">Edit Student Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editStudentForm" method="POST" action="">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_roll_no" class="form-label">Roll No</label>
+                        <input type="text" class="form-control" id="edit_roll_no" name="roll_no" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_semester" class="form-label">Semester</label>
+                        <input type="number" class="form-control" id="edit_semester" name="semester" min="1" max="8" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_department" class="form-label">Department</label>
+                        <input type="text" class="form-control" id="edit_department" name="department" required>
+                    </div>
+                    <div class="mb-3 border-top pt-3 mt-3">
+                        <label for="edit_password" class="form-label text-danger">Reset Password</label>
+                        <input type="text" class="form-control" id="edit_password" name="password" placeholder="Leave blank to keep current password">
+                        <small class="text-muted">Enter a new password to reset it. If left empty, the password will remain unchanged.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ─── Edit Modal ──────────────────────────────────
+    var editModal = document.getElementById('editStudentModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            
+            // Extract info from data-* attributes
+            var id = button.getAttribute('data-id');
+            var name = button.getAttribute('data-name');
+            var roll = button.getAttribute('data-roll');
+            var sem = button.getAttribute('data-sem');
+            var dept = button.getAttribute('data-dept');
+            
+            // Update form action and inputs
+            var form = editModal.querySelector('#editStudentForm');
+            form.action = '/faculty/student/' + id + '/edit';
+            
+            editModal.querySelector('#edit_name').value = name;
+            editModal.querySelector('#edit_roll_no').value = roll;
+            editModal.querySelector('#edit_semester').value = sem;
+            editModal.querySelector('#edit_department').value = dept;
+            editModal.querySelector('#edit_password').value = ''; // Always clear password field
+        });
+    }
+
+    // ─── Client-Side Filtering ───────────────────────
+    var filterRoll = document.getElementById('filterRoll');
+    var filterName = document.getElementById('filterName');
+    var filterDept = document.getElementById('filterDept');
+    var clearBtn = document.getElementById('clearFilters');
+    var rows = document.querySelectorAll('#studentsTableBody tr[data-roll]');
+    var statusEl = document.getElementById('filterStatus');
+
+    function applyFilters() {
+        var qRoll = filterRoll.value.trim().toLowerCase();
+        var qName = filterName.value.trim().toLowerCase();
+        var qDept = filterDept.value.trim().toLowerCase();
+        var visibleCount = 0;
+
+        rows.forEach(function(row) {
+            var roll = row.getAttribute('data-roll');
+            var name = row.getAttribute('data-name');
+            var dept = row.getAttribute('data-dept');
+
+            var matchRoll = !qRoll || roll.indexOf(qRoll) !== -1;
+            var matchName = !qName || name.indexOf(qName) !== -1;
+            var matchDept = !qDept || dept.indexOf(qDept) !== -1;
+
+            if (matchRoll && matchName && matchDept) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (qRoll || qName || qDept) {
+            statusEl.textContent = 'Showing ' + visibleCount + ' of ' + rows.length + ' student(s)';
+        } else {
+            statusEl.textContent = '';
+        }
+    }
+
+    if (filterRoll) filterRoll.addEventListener('input', applyFilters);
+    if (filterName) filterName.addEventListener('input', applyFilters);
+    if (filterDept) filterDept.addEventListener('input', applyFilters);
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            filterRoll.value = '';
+            filterName.value = '';
+            filterDept.value = '';
+            applyFilters();
+        });
+    }
+});
+</script>
 {% endblock %}

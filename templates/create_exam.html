@@ -29,14 +29,33 @@
             <button type="button" class="btn btn-secondary mt-2 mb-4" onclick="addQuestion()">+ Add Question</button>
             
             <h5 class="mt-4">Allot Students</h5>
-            <div class="mb-3" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
-                {% for student in students %}
-                    <div class="form-check">
-                        <input class="form-check-input student-checkbox" type="checkbox" value="{{ student.id }}" id="student_{{ student.id }}">
-                        <label class="form-check-label" for="student_{{ student.id }}">
-                            {{ student.roll_no }} - {{ student.name }} ({{ student.department }})
-                        </label>
-                    </div>
+            <div class="d-flex gap-2 mb-2">
+                <input type="text" class="form-control" id="studentSearchInput" placeholder="Search by roll no or name..." autocomplete="off">
+                <select class="form-select" id="departmentFilter" style="max-width: 200px;">
+                    <option value="">All Depts</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept|lower }}">{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">
+                    <i class="bi bi-check2-all"></i> Select All
+                </button>
+                <span class="text-muted small"><span id="selectedCount">0</span> student(s) selected</span>
+            </div>
+            <div id="studentPickerList" class="mb-3" style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: .375rem; padding: 0;">
+                {% for s in students %}
+                <label class="student-pick-item d-flex align-items-center px-3 py-2 border-bottom"
+                       style="cursor:pointer; margin:0;"
+                       data-roll="{{ s.roll_no|lower }}"
+                       data-name="{{ s.name|lower }}"
+                       data-dept="{{ s.department|lower }}">
+                    <input type="checkbox" class="form-check-input me-2 student-checkbox" value="{{ s.id }}">
+                    <span class="fw-semibold me-2">{{ s.roll_no }}</span>
+                    <span class="text-muted">{{ s.name }}</span>
+                    <span class="badge bg-light text-secondary ms-auto">{{ s.department }}</span>
+                </label>
                 {% endfor %}
             </div>
             
@@ -138,9 +157,94 @@ function submitExam() {
     });
 }
 
-// Add 1 initial question
+// Add 1 initial question and setup student filter/picker logic
 document.addEventListener('DOMContentLoaded', () => {
     addQuestion();
+
+    const searchInput = document.getElementById('studentSearchInput');
+    const deptFilter = document.getElementById('departmentFilter');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    const items = document.querySelectorAll('.student-pick-item');
+    const selectedCountEl = document.getElementById('selectedCount');
+
+    function isVisible(item) {
+        return !item.classList.contains('d-none');
+    }
+
+    function applyFilters() {
+        const q = searchInput.value.trim().toLowerCase();
+        const dept = deptFilter.value;
+
+        items.forEach(function(item) {
+            const roll = item.getAttribute('data-roll');
+            const name = item.getAttribute('data-name');
+            const itemDept = item.getAttribute('data-dept');
+
+            const matchesSearch = !q || roll.includes(q) || name.includes(q);
+            const matchesDept = !dept || itemDept === dept;
+
+            if (matchesSearch && matchesDept) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+            }
+        });
+
+        updateSelectAllBtnLabel();
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    deptFilter.addEventListener('change', applyFilters);
+
+    selectAllBtn.addEventListener('click', function() {
+        const visibleCheckboxes = [];
+        items.forEach(function(item) {
+            if (isVisible(item)) {
+                visibleCheckboxes.push(item.querySelector('.student-checkbox'));
+            }
+        });
+
+        const allChecked = visibleCheckboxes.length > 0 &&
+            visibleCheckboxes.every(function(cb) { return cb.checked; });
+
+        visibleCheckboxes.forEach(function(cb) {
+            cb.checked = !allChecked;
+        });
+
+        updateSelectedCount();
+    });
+
+    function updateSelectAllBtnLabel() {
+        const visibleCheckboxes = [];
+        items.forEach(function(item) {
+            if (isVisible(item)) {
+                visibleCheckboxes.push(item.querySelector('.student-checkbox'));
+            }
+        });
+
+        const allChecked = visibleCheckboxes.length > 0 &&
+            visibleCheckboxes.every(function(cb) { return cb.checked; });
+
+        if (allChecked) {
+            selectAllBtn.innerHTML = '<i class="bi bi-x-square"></i> Deselect All';
+        } else {
+            selectAllBtn.innerHTML = '<i class="bi bi-check2-all"></i> Select All';
+        }
+    }
+
+    checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+
+    function updateSelectedCount() {
+        let count = 0;
+        checkboxes.forEach(function(cb) {
+            if (cb.checked) count++;
+        });
+        selectedCountEl.textContent = count;
+        updateSelectAllBtnLabel();
+    }
 });
 </script>
 {% endblock %}

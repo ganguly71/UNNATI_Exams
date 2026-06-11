@@ -100,7 +100,8 @@ def create_exam():
         return jsonify({'success': True, 'redirect': url_for('main.faculty_dashboard')})
 
     students = Student.query.all()
-    return render_template('create_exam.html', students=students, subjects=SUBJECTS)
+    departments = sorted(list(set(s.department for s in students if s.department)))
+    return render_template('create_exam.html', students=students, subjects=SUBJECTS, departments=departments)
 
 @main.route('/faculty/exam/<int:exam_id>/start', methods=['POST'])
 @login_required
@@ -336,4 +337,24 @@ def exam_stats(exam_id):
     min_score = min(scores) if scores else 0
     
     return render_template('exam_stats.html', exam=exam, submissions=submissions, avg_score=avg_score, max_score=max_score, min_score=min_score)
+
+@main.route('/faculty/student/<int:student_id>/edit', methods=['POST'])
+@login_required
+def faculty_edit_student(student_id):
+    if not isinstance(current_user._get_current_object(), User):
+        return redirect(url_for('main.index'))
+        
+    student = Student.query.get_or_404(student_id)
+    student.name = request.form.get('name')
+    student.roll_no = request.form.get('roll_no')
+    student.semester = request.form.get('semester')
+    student.department = request.form.get('department')
+    
+    password = request.form.get('password')
+    if password:
+        student.set_password(password)
+        
+    db.session.commit()
+    flash('Student details updated successfully.', 'success')
+    return redirect(url_for('main.faculty_students'))
 
