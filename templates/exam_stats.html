@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <a href="{{ url_for('main.faculty_exams') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Exams
+    </a>
+</div>
+
+<div class="card shadow-sm border-0 mb-4 bg-primary text-white">
+    <div class="card-body p-4">
+        <h2>{{ exam.title }}</h2>
+        <p class="mb-0 text-white-50">Subject: <strong>{{ exam.subject }}</strong> &bull; Time Limit: <strong>{{ exam.time_limit_mins }} mins</strong> &bull; Code: <strong>{{ exam.assignment_code or "Not Started" }}</strong></p>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-3">
+            <h6 class="text-muted text-uppercase mb-2">Total Allotted</h6>
+            <h3 class="fw-bold text-dark mb-0">{{ submissions|length }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-3">
+            <h6 class="text-muted text-uppercase mb-2">Completed</h6>
+            {% set completed = submissions|selectattr('status', 'equalto', 'completed')|list %}
+            <h3 class="fw-bold text-success mb-0">{{ completed|length }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-3">
+            <h6 class="text-muted text-uppercase mb-2">Pending / Absent</h6>
+            {% set pending = submissions|selectattr('status', 'equalto', 'pending')|list %}
+            <h3 class="fw-bold text-warning mb-0">{{ pending|length }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-3">
+            <h6 class="text-muted text-uppercase mb-2">Average Score</h6>
+            <h3 class="fw-bold text-primary mb-0">{{ avg_score }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-3">
+            <h6 class="text-muted text-uppercase mb-2">Highest Score</h6>
+            <h3 class="fw-bold text-info mb-0">{{ max_score }}</h3>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-3">
+            <h6 class="text-muted text-uppercase mb-2">Lowest Score</h6>
+            <h3 class="fw-bold text-danger mb-0">{{ min_score }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Student List -->
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h4 class="mb-4">Student Submissions</h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Score</th>
+                        <th>Duration</th>
+                        <th>Completed At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in submissions %}
+                    <tr>
+                        <td class="fw-bold text-secondary">{{ sub.student.roll_no }}</td>
+                        <td>{{ sub.student.name }}</td>
+                        <td><span class="badge bg-secondary">{{ sub.student.department }}</span></td>
+                        <td>
+                            {% if sub.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sub.status == 'completed' %}
+                            <strong class="text-success">{{ sub.score }}</strong>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sub.started_at and sub.completed_at %}
+                                {% set duration = ((sub.completed_at - sub.started_at).seconds / 60)|round(1) %}
+                                {{ duration }} mins
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sub.completed_at %}
+                            {{ sub.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No students allotted to this exam.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

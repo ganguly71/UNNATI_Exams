@@ -15,6 +15,25 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        {% if current_user.is_authenticated %}
+            {% if current_user.email %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.faculty_dashboard') }}">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.faculty_students') }}">Students</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.faculty_exams') }}">Assignments / Exams</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.student_dashboard') }}">My Dashboard</a>
+            </li>
+            {% endif %}
+        {% endif %}
+      </ul>
       <ul class="navbar-nav ms-auto">
         {% if current_user.is_authenticated %}
             <li class="nav-item">

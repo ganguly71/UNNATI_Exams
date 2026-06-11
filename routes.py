@@ -28,34 +28,23 @@ def login_faculty():
 
 @main.route('/login/student', methods=['POST'])
 def login_student():
-    name = request.form.get('name')
     roll_no = request.form.get('roll_no')
-    department = request.form.get('department')
     password = request.form.get('password')
 
     student = Student.query.filter_by(roll_no=roll_no).first()
     if student:
-        if student.name.lower() == name.lower() and student.department.lower() == department.lower():
-            if not student.password_hash:
-                student.set_password(password)
-                db.session.commit()
-                login_user(student)
-                return redirect(url_for('main.student_dashboard'))
-            elif student.check_password(password):
-                login_user(student)
-                return redirect(url_for('main.student_dashboard'))
-            else:
-                flash('Incorrect password.', 'danger')
+        if not student.password_hash:
+            student.set_password(password)
+            db.session.commit()
+            login_user(student)
+            return redirect(url_for('main.student_dashboard'))
+        elif student.check_password(password):
+            login_user(student)
+            return redirect(url_for('main.student_dashboard'))
         else:
-            flash('Roll No exists but Name or Department does not match. Provide accurate data.', 'danger')
+            flash('Incorrect password.', 'danger')
     else:
-        # Create new student
-        new_student = Student(name=name, roll_no=roll_no, semester=1, department=department) # Default semester 1
-        new_student.set_password(password)
-        db.session.add(new_student)
-        db.session.commit()
-        login_user(new_student)
-        return redirect(url_for('main.student_dashboard'))
+        flash('Roll No not found in system. Please ask faculty to add you in UNNATI first.', 'danger')
         
     return redirect(url_for('main.index'))
 
@@ -203,3 +192,69 @@ def submit_exam(exam_id):
     db.session.commit()
     
     return jsonify({'success': True, 'redirect': url_for('main.student_dashboard')})
+
+@main.route('/faculty/students')
+@login_required
+def faculty_students():
+    if not isinstance(current_user._get_current_object(), User):
+        return redirect(url_for('main.index'))
+    students = Student.query.order_by(Student.roll_no).all()
+    student_data = []
+    for s in students:
+        completed = ExamSubmission.query.filter_by(student_id=s.id, status='completed').count()
+        total = ExamSubmission.query.filter_by(student_id=s.id).count()
+        student_data.append({
+            'student': s,
+            'completed': completed,
+            'total': total
+        })
+    return render_template('fac_students.html', student_data=student_data)
+
+@main.route('/faculty/student/<int:student_id>/report')
+@login_required
+def faculty_student_report(student_id):
+    if not isinstance(current_user._get_current_object(), User):
+        return redirect(url_for('main.index'))
+    student = Student.query.get_or_404(student_id)
+    submissions = ExamSubmission.query.filter_by(student_id=student.id).all()
+    return render_template('fac_student_report.html', student=student, submissions=submissions)
+
+@main.route('/faculty/exams')
+@login_required
+def faculty_exams():
+    if not isinstance(current_user._get_current_object(), User):
+        return redirect(url_for('main.index'))
+    exams = Exam.query.order_by(Exam.created_at.desc()).all()
+    exam_stats = []
+    for exam in exams:
+        submissions = ExamSubmission.query.filter_by(exam_id=exam.id).all()
+        total_allotted = len(submissions)
+        completed = [s for s in submissions if s.status == 'completed']
+        completed_count = len(completed)
+        scores = [s.score for s in completed if s.score is not None]
+        avg_score = round(sum(scores) / len(scores), 2) if scores else 0
+        max_score = max(scores) if scores else 0
+        exam_stats.append({
+            'exam': exam,
+            'total_allotted': total_allotted,
+            'completed_count': completed_count,
+            'avg_score': avg_score,
+            'max_score': max_score
+        })
+    return render_template('fac_exams.html', exam_stats=exam_stats)
+
+@main.route('/faculty/exam/<int:exam_id>/stats')
+@login_required
+def exam_stats(exam_id):
+    if not isinstance(current_user._get_current_object(), User):
+        return redirect(url_for('main.index'))
+    exam = Exam.query.get_or_404(exam_id)
+    submissions = ExamSubmission.query.filter_by(exam_id=exam.id).all()
+    scores = [s.score for s in submissions if s.status == 'completed' and s.score is not None]
+    
+    avg_score = round(sum(scores) / len(scores), 2) if scores else 0
+    max_score = max(scores) if scores else 0
+    min_score = min(scores) if scores else 0
+    
+    return render_template('exam_stats.html', exam=exam, submissions=submissions, avg_score=avg_score, max_score=max_score, min_score=min_score)
+

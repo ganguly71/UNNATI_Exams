@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <a href="{{ url_for('main.faculty_students') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Students
+    </a>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-person-badge"></i> {{ student.name }}</h3>
+        <p class="text-muted mb-0">Roll No: <strong>{{ student.roll_no }}</strong> &bull; Dept: <strong>{{ student.department }}</strong> &bull; Semester: <strong>{{ student.semester }}</strong></p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h4 class="mb-3">Exam Attempts & Submissions</h4>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Exam Title</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Score Obtained</th>
+                        <th>Completed At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in submissions %}
+                    <tr>
+                        <td class="fw-bold">{{ sub.exam.title }}</td>
+                        <td>{{ sub.exam.subject }}</td>
+                        <td>
+                            {% if sub.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                            {% elif sub.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ sub.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sub.status == 'completed' %}
+                            <strong class="text-success">{{ sub.score }}</strong>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sub.completed_at %}
+                            {{ sub.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No exams allotted or attempted yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
