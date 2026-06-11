@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer
+from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment
 from datetime import datetime
 import uuid
 
@@ -122,8 +122,87 @@ def start_exam(exam_id):
 def student_dashboard():
     if not isinstance(current_user._get_current_object(), Student):
         return redirect(url_for('main.faculty_dashboard'))
-    submissions = ExamSubmission.query.filter_by(student_id=current_user.id).all()
-    return render_template('student_dashboard.html', submissions=submissions)
+    
+    student = current_user
+    
+    # 1. Fetch online exam submissions (from UNNATI-Exams)
+    online_submissions = ExamSubmission.query.filter_by(student_id=student.id).all()
+    
+    # 2. Fetch manual assessments (from UNNATI)
+    manual_assessments = Assessment.query.filter_by(student_id=student.id).all()
+    
+    # 3. Calculate counts
+    online_total = len(online_submissions)
+    online_completed = [s for s in online_submissions if s.status == 'completed']
+    online_completed_count = len(online_completed)
+    online_pending_count = online_total - online_completed_count
+    
+    manual_total = len(manual_assessments)
+    manual_completed = [a for a in manual_assessments if a.marks != -1]
+    manual_completed_count = len(manual_completed)
+    manual_pending_count = manual_total - manual_completed_count # Absent manual assessments
+    
+    total_exams = online_total + manual_total
+    completed_count = online_completed_count + manual_completed_count
+    pending_count = online_pending_count + manual_pending_count
+    
+    # 4. Consolidate detailed list of completed tests/assignments for stats & chart
+    completed_details = []
+    total_percentage_sum = 0.0
+    valid_scores_count = 0
+    
+    # Online exams
+    for sub in online_submissions:
+        if sub.status == 'completed':
+            total_exam_marks = sum(q.marks_awarded for q in sub.exam.questions)
+            percentage = 0.0
+            if total_exam_marks > 0 and sub.score is not None:
+                percentage = round((sub.score / total_exam_marks) * 100, 1)
+                total_percentage_sum += percentage
+                valid_scores_count += 1
+            completed_details.append({
+                'title': sub.exam.title,
+                'subject': sub.exam.subject,
+                'score': sub.score,
+                'total_marks': total_exam_marks,
+                'percentage': percentage,
+                'date': sub.completed_at or sub.started_at,
+                'type': 'Online Exam'
+            })
+            
+    # Manual assignments
+    for a in manual_assessments:
+        if a.marks != -1:
+            total_marks = a.assignment_group.total_marks if a.assignment_group else 100.0
+            percentage = round((a.marks / total_marks) * 100, 1) if total_marks > 0 else 0.0
+            total_percentage_sum += percentage
+            valid_scores_count += 1
+            completed_details.append({
+                'title': a.assignment_group.name if a.assignment_group else "Manual Assignment",
+                'subject': a.subject,
+                'score': a.marks,
+                'total_marks': total_marks,
+                'percentage': percentage,
+                'date': a.date,
+                'type': 'Manual Assignment'
+            })
+            
+    # Sort completed_details by date to show correct chronological trend in chart
+    completed_details.sort(key=lambda x: x['date'] if x['date'] else datetime.min)
+    
+    avg_percentage = round(total_percentage_sum / valid_scores_count, 1) if valid_scores_count > 0 else 0.0
+    
+    return render_template(
+        'student_dashboard.html',
+        submissions=online_submissions,
+        manual_assessments=manual_assessments,
+        student=student,
+        total_exams=total_exams,
+        completed_count=completed_count,
+        pending_count=pending_count,
+        avg_percentage=avg_percentage,
+        completed_details=completed_details
+    )
 
 @main.route('/student/exam/<int:exam_id>')
 @login_required
