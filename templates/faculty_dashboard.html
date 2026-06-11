@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Faculty Dashboard</h2>
+    <a href="{{ url_for('main.create_exam') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Create Exam</a>
+</div>
+
+<div class="row">
+    {% for exam in exams %}
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ exam.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ exam.subject }} &bull; {{ exam.time_limit_mins }} mins</h6>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if exam.assignment_code %}
+                            <strong>Assignment Code:</strong> <span class="badge bg-info text-dark">{{ exam.assignment_code }}</span>
+                        {% else %}
+                            <span class="text-muted">Not Started</span>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-sm {% if exam.allow_start %}btn-danger{% else %}btn-success{% endif %}" onclick="toggleStart({{ exam.id }})">
+                        {% if exam.allow_start %}Stop Exam{% else %}Allow Start{% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12"><p class="text-muted">No exams created yet.</p></div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleStart(examId) {
+    fetch(`/faculty/exam/${examId}/start`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    }).then(r => r.json()).then(data => {
+        if(data.success) {
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    });
+}
+</script>
+{% endblock %}

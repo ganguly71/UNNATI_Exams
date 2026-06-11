@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">Student Dashboard</h2>
+
+<div class="row">
+    {% for sub in submissions %}
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ sub.exam.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ sub.exam.subject }} &bull; {{ sub.exam.time_limit_mins }} mins</h6>
+                <p>Status: <strong>{{ sub.status|title }}</strong></p>
+                {% if sub.status == 'completed' %}
+                    <p class="mb-0">Score: <strong>{{ sub.score }}</strong></p>
+                {% else %}
+                    {% if sub.exam.allow_start %}
+                        <a href="{{ url_for('main.take_exam', exam_id=sub.exam.id) }}" class="btn btn-success mt-2">Take Exam</a>
+                    {% else %}
+                        <button class="btn btn-secondary mt-2" disabled>Not Started</button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12"><p class="text-muted">No exams allotted.</p></div>
+    {% endfor %}
+</div>
+{% endblock %}
