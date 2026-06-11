@@ -11,7 +11,12 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label>Subject</label>
-                    <input type="text" id="subject" class="form-control" required>
+                    <select id="subject" class="form-select" required>
+                        <option value="">Select Subject...</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject }}">{{ subject }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="col-md-2 mb-3">
                     <label>Time (mins)</label>

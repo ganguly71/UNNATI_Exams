@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment
+from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment, SUBJECTS
 from datetime import datetime
 import uuid
 
@@ -100,7 +100,7 @@ def create_exam():
         return jsonify({'success': True, 'redirect': url_for('main.faculty_dashboard')})
 
     students = Student.query.all()
-    return render_template('create_exam.html', students=students)
+    return render_template('create_exam.html', students=students, subjects=SUBJECTS)
 
 @main.route('/faculty/exam/<int:exam_id>/start', methods=['POST'])
 @login_required
