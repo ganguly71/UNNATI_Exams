@@ -10,8 +10,10 @@ def create_app():
     # DB Config (Sharing the same DB as UNNATI)
     db_url = os.environ.get('DATABASE_URL', '').strip()
     if not db_url:
-        # Default fallback, should ideally be the absolute path to UNNATI's database if local
-        db_url = 'sqlite:///../UNNATI/instance/database.db' 
+        # Default fallback, construct absolute path to UNNATI's database
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'UNNATI'))
+        db_path = os.path.join(base_dir, 'instance', 'database.db')
+        db_url = 'sqlite:///' + db_path.replace('\\', '/')
     elif db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
         
