@@ -115,6 +115,14 @@ def start_exam(exam_id):
     exam.allow_start = not exam.allow_start
     if exam.allow_start and not exam.assignment_code:
         exam.assignment_code = f"EXAM-{uuid.uuid4().hex[:8].upper()}"
+    elif not exam.allow_start:
+        # Mark all pending submissions as absent (-1) when exam is stopped
+        for submission in exam.submissions:
+            if submission.status == 'pending':
+                submission.score = -1.0
+                submission.status = 'completed'
+                submission.completed_at = datetime.utcnow()
+    
     db.session.commit()
     return jsonify({'success': True, 'allow_start': exam.allow_start, 'assignment_code': exam.assignment_code})
 
@@ -142,6 +150,7 @@ def student_dashboard():
     manual_completed = [a for a in manual_assessments if a.marks != -1]
     manual_completed_count = len(manual_completed)
     manual_pending_count = manual_total - manual_completed_count # Absent manual assessments
+
     
     total_exams = online_total + manual_total
     completed_count = online_completed_count + manual_completed_count
@@ -157,7 +166,7 @@ def student_dashboard():
         if sub.status == 'completed':
             total_exam_marks = sum(q.marks_awarded for q in sub.exam.questions)
             percentage = 0.0
-            if total_exam_marks > 0 and sub.score is not None:
+            if total_exam_marks > 0 and sub.score is not None and sub.score != -1:
                 percentage = round((sub.score / total_exam_marks) * 100, 1)
                 total_percentage_sum += percentage
                 valid_scores_count += 1
@@ -170,6 +179,7 @@ def student_dashboard():
                 'date': sub.completed_at or sub.started_at,
                 'type': 'Online Exam'
             })
+
             
     # Manual assignments
     for a in manual_assessments:
@@ -311,7 +321,7 @@ def faculty_exams():
         total_allotted = len(submissions)
         completed = [s for s in submissions if s.status == 'completed']
         completed_count = len(completed)
-        scores = [s.score for s in completed if s.score is not None]
+        scores = [s.score for s in completed if s.score is not None and s.score != -1]
         avg_score = round(sum(scores) / len(scores), 2) if scores else 0
         max_score = max(scores) if scores else 0
         exam_stats.append({
@@ -330,7 +340,7 @@ def exam_stats(exam_id):
         return redirect(url_for('main.index'))
     exam = Exam.query.get_or_404(exam_id)
     submissions = ExamSubmission.query.filter_by(exam_id=exam.id).all()
-    scores = [s.score for s in submissions if s.status == 'completed' and s.score is not None]
+    scores = [s.score for s in submissions if s.status == 'completed' and s.score is not None and s.score != -1]
     
     avg_score = round(sum(scores) / len(scores), 2) if scores else 0
     max_score = max(scores) if scores else 0
