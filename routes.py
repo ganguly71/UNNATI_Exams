@@ -525,6 +525,10 @@ def download_exam(exam_id):
         flash('Unauthorized to download this exam.', 'danger')
         return redirect(url_for('main.faculty_dashboard'))
         
+    if not exam.allow_start:
+        flash('Cannot download the question paper when the exam is not active.', 'warning')
+        return redirect(url_for('main.faculty_dashboard'))
+        
     total_marks = sum(q.marks_awarded for q in exam.questions)
     faculty_name = exam.faculty.name if exam.faculty else "Unknown"
     created_time = exam.created_at.strftime('%Y-%m-%d %I:%M %p') if exam.created_at else "N/A"
