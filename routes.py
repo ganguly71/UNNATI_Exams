@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment, SUBJECTS
 from datetime import datetime
@@ -383,4 +383,200 @@ def delete_exam(exam_id):
     db.session.delete(exam)
     db.session.commit()
     return jsonify({'success': True})
+
+@main.route('/faculty/exam/<int:exam_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_exam(exam_id):
+    if not isinstance(current_user._get_current_object(), User):
+        return redirect(url_for('main.index'))
+        
+    exam = Exam.query.get_or_404(exam_id)
+    if exam.faculty_id != current_user.id and current_user.role != 'admin':
+        flash('Unauthorized to edit this exam.', 'danger')
+        return redirect(url_for('main.faculty_dashboard'))
+        
+    if exam.allow_start:
+        flash('Cannot edit an exam while it is active.', 'warning')
+        return redirect(url_for('main.faculty_dashboard'))
+        
+    if request.method == 'POST':
+        data = request.json
+        exam.title = data.get('title')
+        exam.subject = data.get('subject')
+        exam.time_limit_mins = int(data.get('time_limit_mins', 30))
+        
+        # 1. Update Student Allotments
+        new_allotted_student_ids = [int(sid) for sid in data.get('allotted_students', [])]
+        
+        # Get existing allotments and submissions
+        existing_allotments = ExamAllotment.query.filter_by(exam_id=exam.id).all()
+        existing_allotted_ids = [a.student_id for a in existing_allotments]
+        
+        # Determine students to remove
+        for allotment in existing_allotments:
+            if allotment.student_id not in new_allotted_student_ids:
+                db.session.delete(allotment)
+                submission = ExamSubmission.query.filter_by(exam_id=exam.id, student_id=allotment.student_id).first()
+                if submission:
+                    StudentAnswer.query.filter_by(submission_id=submission.id).delete()
+                    db.session.delete(submission)
+                    
+        # Determine students to add
+        for sid in new_allotted_student_ids:
+            if sid not in existing_allotted_ids:
+                allotment = ExamAllotment(exam_id=exam.id, student_id=sid)
+                db.session.add(allotment)
+                
+                submission = ExamSubmission.query.filter_by(exam_id=exam.id, student_id=sid).first()
+                if not submission:
+                    submission = ExamSubmission(exam_id=exam.id, student_id=sid, status='pending')
+                    db.session.add(submission)
+                else:
+                    submission.status = 'pending'
+                    submission.score = None
+                    submission.started_at = None
+                    submission.completed_at = None
+        
+        # 2. Update Questions and Options
+        req_questions = data.get('questions', [])
+        processed_question_ids = []
+        
+        for q_data in req_questions:
+            q_id = q_data.get('id')
+            question = None
+            if q_id:
+                try:
+                    q_id = int(q_id)
+                except ValueError:
+                    q_id = None
+            
+            if q_id:
+                question = Question.query.filter_by(id=q_id, exam_id=exam.id).first()
+                
+            if question:
+                question.text = q_data['text']
+                question.marks_awarded = float(q_data['marks_awarded'])
+                question.marks_deducted = float(q_data['marks_deducted'])
+            else:
+                question = Question(exam_id=exam.id, text=q_data['text'], marks_awarded=float(q_data['marks_awarded']), marks_deducted=float(q_data['marks_deducted']))
+                db.session.add(question)
+                db.session.commit()
+                
+            processed_question_ids.append(question.id)
+            
+            # Update Options
+            req_options = q_data.get('options', [])
+            processed_option_ids = []
+            
+            for opt_data in req_options:
+                opt_id = opt_data.get('id')
+                option = None
+                if opt_id:
+                    try:
+                        opt_id = int(opt_id)
+                    except ValueError:
+                        opt_id = None
+                        
+                if opt_id:
+                    option = Option.query.filter_by(id=opt_id, question_id=question.id).first()
+                    
+                if option:
+                    option.text = opt_data['text']
+                    option.is_correct = opt_data['is_correct']
+                else:
+                    option = Option(question_id=question.id, text=opt_data['text'], is_correct=opt_data['is_correct'])
+                    db.session.add(option)
+                    db.session.commit()
+                    
+                processed_option_ids.append(option.id)
+                
+            # Delete options not in the payload
+            existing_options = Option.query.filter_by(question_id=question.id).all()
+            for opt in existing_options:
+                if opt.id not in processed_option_ids:
+                    StudentAnswer.query.filter_by(option_id=opt.id).delete()
+                    db.session.delete(opt)
+                    
+        # Delete questions not in the payload
+        existing_questions = Question.query.filter_by(exam_id=exam.id).all()
+        for q in existing_questions:
+            if q.id not in processed_question_ids:
+                StudentAnswer.query.filter_by(question_id=q.id).delete()
+                Option.query.filter_by(question_id=q.id).delete()
+                db.session.delete(q)
+                
+        db.session.commit()
+        return jsonify({'success': True, 'redirect': url_for('main.faculty_dashboard')})
+        
+    students = Student.query.all()
+    departments = sorted(list(set(s.department for s in students if s.department)))
+    allotted_student_ids = [a.student_id for a in ExamAllotment.query.filter_by(exam_id=exam.id).all()]
+    
+    return render_template('edit_exam.html', exam=exam, students=students, subjects=SUBJECTS, departments=departments, allotted_student_ids=allotted_student_ids)
+
+@main.route('/faculty/exam/<int:exam_id>/download')
+@login_required
+def download_exam(exam_id):
+    if not isinstance(current_user._get_current_object(), User):
+        return redirect(url_for('main.index'))
+        
+    exam = Exam.query.get_or_404(exam_id)
+    if exam.faculty_id != current_user.id and current_user.role != 'admin':
+        flash('Unauthorized to download this exam.', 'danger')
+        return redirect(url_for('main.faculty_dashboard'))
+        
+    total_marks = sum(q.marks_awarded for q in exam.questions)
+    faculty_name = exam.faculty.name if exam.faculty else "Unknown"
+    created_time = exam.created_at.strftime('%Y-%m-%d %I:%M %p') if exam.created_at else "N/A"
+    
+    # Allotted students
+    allotments = ExamAllotment.query.filter_by(exam_id=exam.id).all()
+    assigned_students = []
+    for allotment in allotments:
+        student = allotment.student
+        if student:
+            assigned_students.append(f"- {student.name} (Roll No: {student.roll_no})")
+            
+    if not assigned_students:
+        assigned_students_str = "*No students assigned to this exam.*"
+    else:
+        assigned_students_str = "\n".join(assigned_students)
+        
+    md = []
+    md.append(f"# UNNATI EXAM QUESTION PAPER: {exam.title}")
+    md.append("")
+    md.append(f"**UNNATI EXAM ID:** {exam.assignment_code or f'EXAM-{exam.id}'}")
+    md.append(f"**Subject of the test:** {exam.subject}")
+    md.append(f"**Respected Faculty:** {faculty_name}")
+    md.append(f"**Date and Time Created:** {created_time}")
+    md.append(f"**Total Marks:** {total_marks}")
+    md.append(f"**Time Limit:** {exam.time_limit_mins} minutes")
+    md.append("")
+    md.append("## Assigned Students")
+    md.append(assigned_students_str)
+    md.append("")
+    md.append("---")
+    md.append("")
+    md.append("## Questions")
+    md.append("")
+    
+    for idx, q in enumerate(exam.questions, 1):
+        md.append(f"### Q{idx}. {q.text}")
+        md.append(f"*Marks Awarded: {q.marks_awarded} | Marks Deducted: {q.marks_deducted}*")
+        md.append("")
+        for opt in q.options:
+            if opt.is_correct:
+                md.append(f"- [x] **{opt.text}** *(Correct)*")
+            else:
+                md.append(f"- [ ] {opt.text}")
+        md.append("")
+        
+    markdown_content = "\n".join(md)
+    filename = f"UNNATI_EXAM_{exam.assignment_code or exam.id}.md"
+    
+    return Response(
+        markdown_content,
+        mimetype="text/markdown",
+        headers={"Content-disposition": f"attachment; filename={filename}"}
+    )
 
