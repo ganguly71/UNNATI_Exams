@@ -12,7 +12,8 @@
                     <div class="options">
                         {% for opt in q.options %}
                         <div class="form-check">
-                            <input class="form-check-input answer-checkbox" type="checkbox" name="{{ q.id }}" value="{{ opt.id }}" id="opt_{{ opt.id }}">
+                            <input class="form-check-input answer-checkbox" type="checkbox" name="{{ q.id }}" value="{{ opt.id }}" id="opt_{{ opt.id }}"
+                                   {% if opt.id in saved_option_ids %}checked{% endif %}>
                             <label class="form-check-label" for="opt_{{ opt.id }}">
                                 {{ opt.text }}
                             </label>
@@ -80,6 +81,28 @@
             }
         });
     }
+    
+    // Auto-save logic on change of checkbox
+    document.querySelectorAll('.answer-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const qId = this.name;
+            const checkedBoxes = document.querySelectorAll(`.answer-checkbox[name="${qId}"]:checked`);
+            const optionIds = Array.from(checkedBoxes).map(cb => cb.value);
+            
+            fetch(`/student/exam/${examId}/save_answer`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    question_id: qId,
+                    option_ids: optionIds
+                })
+            }).then(r => r.json()).then(data => {
+                if (!data.success) {
+                    console.error('Failed to auto-save answer:', data.error);
+                }
+            });
+        });
+    });
     
     updateTimer();
 </script>

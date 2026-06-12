@@ -265,7 +265,38 @@ def take_exam(exam_id):
         submission.started_at = datetime.utcnow()
         db.session.commit()
         
-    return render_template('take_exam.html', exam=submission.exam, submission=submission)
+    # Fetch existing answers for this submission
+    saved_answers = StudentAnswer.query.filter_by(submission_id=submission.id).all()
+    saved_option_ids = {ans.option_id for ans in saved_answers}
+        
+    return render_template('take_exam.html', exam=submission.exam, submission=submission, saved_option_ids=saved_option_ids)
+
+
+@main.route('/student/exam/<int:exam_id>/save_answer', methods=['POST'])
+@login_required
+def save_answer(exam_id):
+    if not isinstance(current_user._get_current_object(), Student):
+        return jsonify({'error': 'Unauthorized'}), 403
+        
+    submission = ExamSubmission.query.filter_by(exam_id=exam_id, student_id=current_user.id).first_or_404()
+    if submission.status == 'completed':
+        return jsonify({'error': 'Exam already submitted'}), 400
+        
+    data = request.json
+    question_id = int(data.get('question_id'))
+    selected_option_ids = [int(oid) for oid in data.get('option_ids', []) if oid]
+    
+    # Delete existing answers for this question and submission
+    StudentAnswer.query.filter_by(submission_id=submission.id, question_id=question_id).delete()
+    
+    # Insert new answers
+    for opt_id in selected_option_ids:
+        ans = StudentAnswer(submission_id=submission.id, question_id=question_id, option_id=opt_id)
+        db.session.add(ans)
+            
+    db.session.commit()
+    return jsonify({'success': True})
+
 
 @main.route('/student/exam/<int:exam_id>/submit', methods=['POST'])
 @login_required
@@ -279,6 +310,9 @@ def submit_exam(exam_id):
         
     data = request.json
     answers_data = data.get('answers', {})
+    
+    # Clear existing answers to avoid duplication
+    StudentAnswer.query.filter_by(submission_id=submission.id).delete()
     
     total_score = 0.0
     
@@ -611,4 +645,48 @@ def download_exam(exam_id):
         mimetype="text/markdown",
         headers={"Content-disposition": f"attachment; filename={filename}"}
     )
+
+
+@main.route('/faculty/exam/<int:exam_id>/clone', methods=['POST'])
+@login_required
+def clone_exam(exam_id):
+    if not isinstance(current_user._get_current_object(), User):
+        return jsonify({'error': 'Unauthorized'}), 403
+    exam = Exam.query.get_or_404(exam_id)
+    if exam.faculty_id != current_user.id and current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+        
+    # Duplicate Exam
+    new_exam = Exam(
+        title=f"{exam.title} (Copy)",
+        subject=exam.subject,
+        faculty_id=current_user.id,
+        time_limit_mins=exam.time_limit_mins,
+        is_active=True,
+        allow_start=False
+    )
+    db.session.add(new_exam)
+    db.session.commit()
+    
+    # Duplicate Questions and Options
+    for q in exam.questions:
+        new_q = Question(
+            exam_id=new_exam.id,
+            text=q.text,
+            marks_awarded=q.marks_awarded,
+            marks_deducted=q.marks_deducted
+        )
+        db.session.add(new_q)
+        db.session.commit()
+        
+        for opt in q.options:
+            new_opt = Option(
+                question_id=new_q.id,
+                text=opt.text,
+                is_correct=opt.is_correct
+            )
+            db.session.add(new_opt)
+            
+    db.session.commit()
+    return jsonify({'success': True, 'redirect': url_for('main.faculty_dashboard')})
 
