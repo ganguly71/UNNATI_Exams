@@ -90,10 +90,11 @@ def create_exam():
                 
         # Allot students
         for sid in data.get('allotted_students', []):
-            allotment = ExamAllotment(exam_id=exam.id, student_id=sid)
+            sid_int = int(sid)
+            allotment = ExamAllotment(exam_id=exam.id, student_id=sid_int)
             db.session.add(allotment)
             # Create pending submission
-            submission = ExamSubmission(exam_id=exam.id, student_id=sid, status='pending')
+            submission = ExamSubmission(exam_id=exam.id, student_id=sid_int, status='pending')
             db.session.add(submission)
             
         db.session.commit()
