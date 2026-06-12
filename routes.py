@@ -117,12 +117,40 @@ def start_exam(exam_id):
     if exam.allow_start and not exam.assignment_code:
         exam.assignment_code = f"EXAM-{uuid.uuid4().hex[:8].upper()}"
     elif not exam.allow_start:
-        # Mark all pending submissions as absent (-1) when exam is stopped
+        # Stop exam: auto-submit attempted tests, mark unattempted as absent (-1)
         for submission in exam.submissions:
             if submission.status == 'pending':
-                submission.score = -1.0
-                submission.status = 'completed'
-                submission.completed_at = datetime.utcnow()
+                if submission.started_at is not None:
+                    # Student started the test but didn't submit it. Auto-submit their test.
+                    # Calculate score based on recorded answers (if any)
+                    total_score = 0.0
+                    for q in exam.questions:
+                        student_answers = StudentAnswer.query.filter_by(submission_id=submission.id, question_id=q.id).all()
+                        selected_option_ids = [ans.option_id for ans in student_answers]
+                        
+                        correct_options = [opt for opt in q.options if opt.is_correct]
+                        correct_option_ids = [opt.id for opt in correct_options]
+                        
+                        correctly_selected = sum(1 for oid in selected_option_ids if oid in correct_option_ids)
+                        incorrectly_selected = sum(1 for oid in selected_option_ids if oid not in correct_option_ids)
+                        
+                        q_score = 0
+                        if len(correct_options) > 0:
+                            q_score += (correctly_selected / len(correct_options)) * q.marks_awarded
+                            
+                        if incorrectly_selected > 0:
+                            q_score -= q.marks_deducted
+                            
+                        total_score += q_score
+                    
+                    submission.score = total_score
+                    submission.status = 'completed'
+                    submission.completed_at = datetime.utcnow()
+                else:
+                    # Student did not attempt/open the test, mark as absent (-1)
+                    submission.score = -1.0
+                    submission.status = 'completed'
+                    submission.completed_at = datetime.utcnow()
     
     db.session.commit()
     return jsonify({'success': True, 'allow_start': exam.allow_start, 'assignment_code': exam.assignment_code})
