@@ -167,19 +167,21 @@ def student_dashboard():
         if sub.status == 'completed':
             total_exam_marks = sum(q.marks_awarded for q in sub.exam.questions)
             percentage = 0.0
-            if total_exam_marks > 0 and sub.score is not None and sub.score != -1:
-                percentage = round((sub.score / total_exam_marks) * 100, 1)
-                total_percentage_sum += percentage
-                valid_scores_count += 1
-            completed_details.append({
-                'title': sub.exam.title,
-                'subject': sub.exam.subject,
-                'score': sub.score,
-                'total_marks': total_exam_marks,
-                'percentage': percentage,
-                'date': sub.completed_at or sub.started_at,
-                'type': 'Online Exam'
-            })
+            # Only show scores in charts/stats after the teacher has stopped the exam (allow_start is False)
+            if not sub.exam.allow_start:
+                if total_exam_marks > 0 and sub.score is not None and sub.score != -1:
+                    percentage = round((sub.score / total_exam_marks) * 100, 1)
+                    total_percentage_sum += percentage
+                    valid_scores_count += 1
+                completed_details.append({
+                    'title': sub.exam.title,
+                    'subject': sub.exam.subject,
+                    'score': sub.score,
+                    'total_marks': total_exam_marks,
+                    'percentage': percentage,
+                    'date': sub.completed_at or sub.started_at,
+                    'type': 'Online Exam'
+                })
 
             
     # Manual assignments
@@ -368,4 +370,17 @@ def faculty_edit_student(student_id):
     db.session.commit()
     flash('Student details updated successfully.', 'success')
     return redirect(url_for('main.faculty_students'))
+
+@main.route('/faculty/exam/<int:exam_id>/delete', methods=['POST'])
+@login_required
+def delete_exam(exam_id):
+    if not isinstance(current_user._get_current_object(), User):
+        return jsonify({'error': 'Unauthorized'}), 403
+    exam = Exam.query.get_or_404(exam_id)
+    if exam.faculty_id != current_user.id and current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+        
+    db.session.delete(exam)
+    db.session.commit()
+    return jsonify({'success': True})
 
