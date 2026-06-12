@@ -90,7 +90,11 @@
                         </td>
                         <td>
                             {% if sub.status == 'completed' %}
-                            <strong class="text-success">{{ sub.score }}</strong>
+                                {% if sub.score == -1.0 %}
+                                <strong class="text-danger">A</strong>
+                                {% else %}
+                                <strong class="text-success">{{ sub.score }}</strong>
+                                {% endif %}
                             {% else %}
                             <span class="text-muted">-</span>
                             {% endif %}

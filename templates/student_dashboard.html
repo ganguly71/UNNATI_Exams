@@ -106,7 +106,12 @@
                         
                         {% if sub.status == 'completed' %}
                             <div class="bg-light p-2 rounded">
-                                <strong>Score:</strong> <span class="text-success fw-bold">{{ sub.score }}</span>
+                                <strong>Score:</strong>
+                                {% if sub.score == -1.0 %}
+                                <span class="text-danger fw-bold">A</span>
+                                {% else %}
+                                <span class="text-success fw-bold">{{ sub.score }}</span>
+                                {% endif %}
                             </div>
                         {% else %}
                             {% if sub.exam.allow_start %}
