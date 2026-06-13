@@ -1,132 +1,133 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card shadow-sm border-0 mb-4">
-    <div class="card-body">
-        <h2 class="mb-4 text-primary"><i class="bi bi-people-fill"></i> Student Roster & Performance</h2>
-        
-        <!-- ─── Filter Bar ─────────────────────────────── -->
-        <div class="row g-2 mb-3" id="filterBar">
-            <div class="col-md-4">
-                <input type="text" class="form-control form-control-sm" id="filterRoll"
-                       placeholder="Filter by Roll No...">
+<div class="container mt-4">
+    <div class="card shadow-sm border-0 mb-4 bg-white" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-body p-4">
+            <h2 class="mb-4 text-dark fw-bold"><i class="bi bi-people-fill me-2" style="color: var(--color-navy-600);"></i> Student Roster &amp; Performance</h2>
+            
+            <!-- ─── Filter Bar ─────────────────────────────── -->
+            <div class="row g-3 mb-4" id="filterBar">
+                <div class="col-md-4">
+                    <input type="text" class="form-control login-input" id="filterRoll" placeholder="Filter by Roll No...">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control login-input" id="filterName" placeholder="Filter by Name...">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control login-input" id="filterDept" placeholder="Filter by Department...">
+                </div>
+                <div class="col-md-1 d-flex">
+                    <button class="btn btn-navy-outline w-100" id="clearFilters" title="Clear filters" style="height: 44px; border-radius: 8px;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
             </div>
-            <div class="col-md-4">
-                <input type="text" class="form-control form-control-sm" id="filterName"
-                       placeholder="Filter by Name...">
-            </div>
-            <div class="col-md-3">
-                <input type="text" class="form-control form-control-sm" id="filterDept"
-                       placeholder="Filter by Department...">
-            </div>
-            <div class="col-md-1 d-flex align-items-center">
-                <button class="btn btn-sm btn-outline-secondary w-100" id="clearFilters" title="Clear filters">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-        </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Roll No</th>
-                        <th>Name</th>
-                        <th>Department</th>
-                        <th>Semester</th>
-                        <th>Exams Completed</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="studentsTableBody">
-                    {% for data in student_data %}
-                    <tr data-roll="{{ data.student.roll_no|lower }}"
-                        data-name="{{ data.student.name|lower }}"
-                        data-dept="{{ data.student.department|lower }}">
-                        <td class="fw-bold text-secondary">{{ data.student.roll_no }}</td>
-                        <td>{{ data.student.name }}</td>
-                        <td><span class="badge bg-secondary">{{ data.student.department }}</span></td>
-                        <td>Semester {{ data.student.semester }}</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">{{ data.completed }} / {{ data.total }}</span>
-                                <div class="progress w-50" style="height: 6px;">
-                                    {% set pct = (data.completed / data.total * 100) if data.total > 0 else 0 %}
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ pct }}%"></div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Roll No</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Semester</th>
+                            <th>Exams Completed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        {% for data in student_data %}
+                        <tr data-roll="{{ data.student.roll_no|lower }}"
+                            data-name="{{ data.student.name|lower }}"
+                            data-dept="{{ data.student.department|lower }}">
+                            <td class="fw-bold text-secondary" style="font-family: 'JetBrains Mono', monospace;">{{ data.student.roll_no }}</td>
+                            <td class="text-dark fw-medium">{{ data.student.name }}</td>
+                            <td><span class="badge bg-light text-secondary border border-light-subtle px-2 py-1">{{ data.student.department }}</span></td>
+                            <td>Semester {{ data.student.semester }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2 code-mono" style="font-size: 14px;">{{ data.completed }} / {{ data.total }}</span>
+                                    <div class="progress w-50" style="height: 6px; border-radius: 3px;">
+                                        {% set pct = (data.completed / data.total * 100) if data.total > 0 else 0 %}
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ pct }}%; border-radius: 3px;"></div>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <a href="{{ url_for('main.faculty_student_report', student_id=data.student.id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-bar-chart-line"></i> View Report
-                                </a>
-                                <!-- Edit Button (Triggers JS modal populate) -->
-                                <button class="btn btn-sm btn-outline-secondary" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editStudentModal"
-                                        data-id="{{ data.student.id }}"
-                                        data-name="{{ data.student.name }}"
-                                        data-roll="{{ data.student.roll_no }}"
-                                        data-sem="{{ data.student.semester }}"
-                                        data-dept="{{ data.student.department }}">
-                                    <i class="bi bi-pencil-fill"></i> Edit
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr id="noStudentsRow">
-                        <td colspan="6" class="text-center text-muted">No students found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('main.faculty_student_report', student_id=data.student.id) }}" class="btn btn-sm btn-navy-outline">
+                                        <i class="bi bi-bar-chart-line"></i> Report
+                                    </a>
+                                    <!-- Edit Button (Triggers JS modal populate) -->
+                                    <button class="btn btn-sm btn-gray-outline" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editStudentModal"
+                                            data-id="{{ data.student.id }}"
+                                            data-name="{{ data.student.name }}"
+                                            data-roll="{{ data.student.roll_no }}"
+                                            data-sem="{{ data.student.semester }}"
+                                            data-dept="{{ data.student.department }}">
+                                        <i class="bi bi-pencil-fill"></i> Edit
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr id="noStudentsRow">
+                            <td colspan="6" class="text-center text-muted py-4">No students found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-muted small mt-2" id="filterStatus"></div>
         </div>
-        <div class="text-muted small mt-2" id="filterStatus"></div>
     </div>
 </div>
 
 <!-- Edit Student Modal -->
 <div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editStudentModalLabel">Edit Student Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header py-3" style="background-color: var(--color-navy-900); color: white;">
+                <h5 class="modal-title fw-bold" id="editStudentModalLabel">Edit Student Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editStudentForm" method="POST" action="">
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label for="edit_name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                        <label for="edit_name" class="form-label fw-medium text-dark">Name</label>
+                        <input type="text" class="form-control login-input" id="edit_name" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="edit_roll_no" class="form-label">Roll No</label>
-                        <input type="text" class="form-control" id="edit_roll_no" name="roll_no" required>
+                        <label for="edit_roll_no" class="form-label fw-medium text-dark">Roll No</label>
+                        <input type="text" class="form-control login-input" id="edit_roll_no" name="roll_no" required>
                     </div>
                     <div class="mb-3">
-                        <label for="edit_semester" class="form-label">Semester</label>
-                        <input type="number" class="form-control" id="edit_semester" name="semester" min="1" max="8" required>
+                        <label for="edit_semester" class="form-label fw-medium text-dark">Semester</label>
+                        <input type="number" class="form-control login-input" id="edit_semester" name="semester" min="1" max="8" required>
                     </div>
                     <div class="mb-3">
-                        <label for="edit_department" class="form-label">Department</label>
-                        <input type="text" class="form-control" id="edit_department" name="department" required>
+                        <label for="edit_department" class="form-label fw-medium text-dark">Department</label>
+                        <input type="text" class="form-control login-input" id="edit_department" name="department" required>
                     </div>
-                    <div class="mb-3 border-top pt-3 mt-3">
-                        <label for="edit_password" class="form-label text-danger">Reset Password</label>
-                        <input type="text" class="form-control" id="edit_password" name="password" placeholder="Leave blank to keep current password">
-                        <small class="text-muted">Enter a new password to reset it. If left empty, the password will remain unchanged.</small>
+                    <div class="mb-3 border-top pt-3 mt-4">
+                        <label for="edit_password" class="form-label fw-medium text-danger">Reset Password</label>
+                        <input type="text" class="form-control login-input" id="edit_password" name="password" placeholder="Leave blank to keep current password">
+                        <small class="text-muted d-block mt-1">Enter a new password to reset it. If left empty, the password remains unchanged.</small>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="modal-footer border-0 p-3 bg-light">
+                    <button type="button" class="btn btn-secondary px-4" style="border-radius: 8px;" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-submit-exam px-4" style="height: auto; padding-top: 10px; padding-bottom: 10px;">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // ─── Edit Modal ──────────────────────────────────

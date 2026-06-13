@@ -1,40 +1,74 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <h3 class="text-center mb-4">Student Login</h3>
-        <div class="card shadow-sm mb-4">
-            <div class="card-body p-4">
-                <form action="{{ url_for('main.login_student') }}" method="POST">
-                    <div class="mb-3">
-                        <label>Roll No</label>
-                        <input type="text" name="roll_no" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Password</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Login as Student</button>
-                </form>
+<div class="login-split-container">
+    <!-- Left Panel: Hero Content -->
+    <div class="login-hero-panel">
+        <div class="login-hero-content">
+            <div class="login-logo mb-4">
+                <span class="logo-unnati">UNNATI</span>
+                <span class="logo-dot">■</span>
+                <span class="logo-exams">Exams</span>
+            </div>
+            <p class="login-tagline mb-5">Welcome to the Exam App of <br> Cooch Behar Government <br> Engineering College</p>
+            <div class="login-features">
+                <div class="login-feature-item mb-4">
+                    <i class="bi bi-shield-check me-3"></i>
+                    <span>Secure &amp; monitored environment</span>
+                </div>
+                <div class="login-feature-item mb-4">
+                    <i class="bi bi-clock me-3"></i>
+                    <span>Timed sessions with auto-submit</span>
+                </div>
+                <div class="login-feature-item">
+                    <i class="bi bi-bar-chart-line me-3"></i>
+                    <span>Detailed performance analytics</span>
+                </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-5">
-        <h3 class="text-center mb-4">Faculty / Admin Login</h3>
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <form action="{{ url_for('main.login_faculty') }}" method="POST">
-                    <div class="mb-3">
-                        <label>Email</label>
-                        <input type="email" name="email" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Password</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-dark w-100">Login as Faculty / Admin</button>
-                </form>
+
+    <!-- Right Panel: Forms Content -->
+    <div class="login-form-panel">
+        <div class="login-form-content">
+            <!-- Student Login Card -->
+            <div class="card login-card login-card-student mb-4">
+                <div class="card-body p-4">
+                    <h4 class="card-title fw-bold mb-4" style="color: var(--color-navy-950);">Student Login</h4>
+                    <form action="{{ url_for('main.login_student') }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium" style="color: var(--color-text);">Roll No</label>
+                            <input type="text" name="roll_no" class="form-control login-input" placeholder="e.g. 21CS01"
+                                required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-medium" style="color: var(--color-text);">Password</label>
+                            <input type="password" name="password" class="form-control login-input"
+                                placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-submit btn-submit-student w-100">Login as Student</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Faculty Login Card -->
+            <div class="card login-card login-card-faculty">
+                <div class="card-body p-4">
+                    <h4 class="card-title fw-bold mb-4" style="color: var(--color-navy-950);">Faculty / Admin Login</h4>
+                    <form action="{{ url_for('main.login_faculty') }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium" style="color: var(--color-text);">Email</label>
+                            <input type="email" name="email" class="form-control login-input"
+                                placeholder="faculty@unnati.edu" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-medium" style="color: var(--color-text);">Password</label>
+                            <input type="password" name="password" class="form-control login-input"
+                                placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-submit btn-submit-faculty w-100">Login as Faculty /
+                            Admin</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

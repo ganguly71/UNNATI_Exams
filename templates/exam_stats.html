@@ -1,128 +1,278 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="mb-4 d-flex justify-content-between align-items-center">
-    <a href="{{ url_for('main.faculty_exams') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> Back to Exams
-    </a>
-</div>
+<div class="container mt-4">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <a href="{{ url_for('main.faculty_exams') }}" class="btn btn-navy-outline btn-sm" style="border-radius: 8px; font-weight: 500;">
+            <i class="bi bi-arrow-left"></i> Back to Exams
+        </a>
+    </div>
 
-<div class="card shadow-sm border-0 mb-4 bg-primary text-white">
-    <div class="card-body p-4">
-        <h2>{{ exam.title }}</h2>
-        <p class="mb-0 text-white-50">Subject: <strong>{{ exam.subject }}</strong> &bull; Time Limit: <strong>{{ exam.time_limit_mins }} mins</strong> &bull; Code: <strong>{{ exam.assignment_code or "Not Started" }}</strong></p>
+    <div class="card shadow-sm border-0 mb-4 bg-primary text-white" style="border-radius: 12px; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\'%3E%3Ccircle cx=\'2\' cy=\'2\' r=\'2\' fill=\'%23FFFFFF\' fill-opacity=\'0.06\'/%3E%3C/svg%3E') !important;">
+        <div class="card-body p-4">
+            <h2 class="fw-bold mb-1">{{ exam.title }}</h2>
+            <p class="mb-0 text-white-50">Subject: <strong class="text-white">{{ exam.subject }}</strong> &bull; Time Limit: <strong class="text-white">{{ exam.time_limit_mins }} mins</strong> &bull; Code: <strong class="text-white">{{ exam.assignment_code or "Not Started" }}</strong></p>
+        </div>
     </div>
-</div>
 
-<!-- Stats Row -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm h-100 text-center p-3">
-            <h6 class="text-muted text-uppercase mb-2">Total Allotted</h6>
-            <h3 class="fw-bold text-dark mb-0">{{ submissions|length }}</h3>
+    <!-- Stats Row -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <h6 class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Total Allotted</h6>
+                <h3 class="code-mono fw-bold text-dark mb-0">{{ submissions|length }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <h6 class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Completed</h6>
+                {% set completed = submissions|selectattr('status', 'equalto', 'completed')|list %}
+                <h3 class="code-mono fw-bold text-success mb-0">{{ completed|length }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <h6 class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Pending / Absent</h6>
+                {% set pending = submissions|selectattr('status', 'equalto', 'pending')|list %}
+                <h3 class="code-mono fw-bold text-warning mb-0">{{ pending|length }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <h6 class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Average Score</h6>
+                <h3 class="code-mono fw-bold text-primary mb-0">{{ avg_score }}</h3>
+            </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm h-100 text-center p-3">
-            <h6 class="text-muted text-uppercase mb-2">Completed</h6>
-            {% set completed = submissions|selectattr('status', 'equalto', 'completed')|list %}
-            <h3 class="fw-bold text-success mb-0">{{ completed|length }}</h3>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm h-100 text-center p-3">
-            <h6 class="text-muted text-uppercase mb-2">Pending / Absent</h6>
-            {% set pending = submissions|selectattr('status', 'equalto', 'pending')|list %}
-            <h3 class="fw-bold text-warning mb-0">{{ pending|length }}</h3>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm h-100 text-center p-3">
-            <h6 class="text-muted text-uppercase mb-2">Average Score</h6>
-            <h3 class="fw-bold text-primary mb-0">{{ avg_score }}</h3>
-        </div>
-    </div>
-</div>
 
-<div class="row mb-4">
-    <div class="col-md-6 mb-3">
-        <div class="card border-0 shadow-sm h-100 text-center p-3">
-            <h6 class="text-muted text-uppercase mb-2">Highest Score</h6>
-            <h3 class="fw-bold text-info mb-0">{{ max_score }}</h3>
+    <div class="row mb-4 g-3">
+        <div class="col-md-6">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <h6 class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Highest Score</h6>
+                <h3 class="code-mono fw-bold mb-0" style="color: var(--color-navy-600);">{{ max_score }}</h3>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <h6 class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Lowest Score</h6>
+                <h3 class="code-mono fw-bold text-danger mb-0">{{ min_score }}</h3>
+            </div>
         </div>
     </div>
-    <div class="col-md-6 mb-3">
-        <div class="card border-0 shadow-sm h-100 text-center p-3">
-            <h6 class="text-muted text-uppercase mb-2">Lowest Score</h6>
-            <h3 class="fw-bold text-danger mb-0">{{ min_score }}</h3>
-        </div>
-    </div>
-</div>
 
-<!-- Detailed Student List -->
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <h4 class="mb-4">Student Submissions</h4>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Roll No</th>
-                        <th>Student Name</th>
-                        <th>Department</th>
-                        <th>Status</th>
-                        <th>Score</th>
-                        <th>Duration</th>
-                        <th>Completed At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for sub in submissions %}
-                    <tr>
-                        <td class="fw-bold text-secondary">{{ sub.student.roll_no }}</td>
-                        <td>{{ sub.student.name }}</td>
-                        <td><span class="badge bg-secondary">{{ sub.student.department }}</span></td>
-                        <td>
-                            {% if sub.status == 'completed' %}
-                            <span class="badge bg-success">Completed</span>
-                            {% else %}
-                            <span class="badge bg-warning text-dark">Pending</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if sub.status == 'completed' %}
-                                {% if sub.score == -1.0 %}
-                                <strong class="text-danger">A</strong>
+    <!-- Score Distribution Chart -->
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: #ffffff;">
+        <div class="card-body p-4">
+            <h5 class="card-title fw-bold text-dark mb-4"><i class="bi bi-bar-chart-fill me-2" style="color: var(--color-navy-600);"></i> Score Distribution</h5>
+            <div style="height: 280px; position: relative;">
+                <canvas id="scoreDistChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Student List -->
+    <div class="card shadow-sm border-0 bg-white" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-body p-4">
+            <h4 class="mb-4 text-dark fw-bold">Student Submissions</h4>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th class="cursor-pointer" onclick="sortTableByScore()" id="scoreHeader" style="user-select: none;">
+                                Score <i class="bi bi-sort-down text-navy-600 ms-1" id="sortIcon"></i>
+                            </th>
+                            <th>Duration</th>
+                            <th>Completed At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in submissions %}
+                        <tr>
+                            <td class="fw-bold text-secondary" style="font-family: 'JetBrains Mono', monospace;">{{ sub.student.roll_no }}</td>
+                            <td class="text-dark fw-medium">{{ sub.student.name }}</td>
+                            <td><span class="badge bg-light text-secondary border border-light-subtle px-2 py-1">{{ sub.student.department }}</span></td>
+                            <td>
+                                {% if sub.status == 'completed' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Completed</span>
                                 {% else %}
-                                <strong class="text-success">{{ sub.score }}</strong>
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending</span>
                                 {% endif %}
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if sub.started_at and sub.completed_at %}
-                                {% set duration = ((sub.completed_at - sub.started_at).seconds / 60)|round(1) %}
-                                {{ duration }} mins
-                            {% else %}
+                            </td>
+                            <td>
+                                {% if sub.status == 'completed' %}
+                                    {% if sub.score == -1.0 %}
+                                    <strong class="text-danger code-mono">A</strong>
+                                    {% else %}
+                                    <strong class="text-success code-mono">{{ sub.score }}</strong>
+                                    {% endif %}
+                                {% else %}
                                 <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if sub.completed_at %}
-                            {{ sub.completed_at.strftime('%Y-%m-%d %H:%M') }}
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted">No students allotted to this exam.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                {% endif %}
+                            </td>
+                            <td class="code-mono">
+                                {% if sub.started_at and sub.completed_at %}
+                                    {% set duration = ((sub.completed_at - sub.started_at).seconds / 60)|round(1) %}
+                                    {{ duration }} mins
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sub.completed_at %}
+                                {{ sub.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No students allotted to this exam.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Get scores from Jinja
+    const scores = [
+        {% for sub in submissions %}
+            {% if sub.status == 'completed' and sub.score is not none and sub.score != -1.0 %}
+                {{ sub.score }},
+            {% endif %}
+        {% endfor %}
+    ];
+    
+    // Get max marks from questions sum
+    const totalMarks = {{ exam.questions|sum(attribute='marks_awarded') }};
+    
+    // Count bands
+    let bands = [0, 0, 0, 0, 0];
+    scores.forEach(score => {
+        let pct = totalMarks > 0 ? (score / totalMarks) * 100 : 0;
+        if (pct <= 20) bands[0]++;
+        else if (pct <= 40) bands[1]++;
+        else if (pct <= 60) bands[2]++;
+        else if (pct <= 80) bands[3]++;
+        else bands[4]++;
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        // Render Chart.js Score Distribution
+        const ctx = document.getElementById('scoreDistChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'],
+                datasets: [{
+                    data: bands,
+                    backgroundColor: ['#E63946', '#FF6B35', '#F7931E', '#0D9488', '#22C55E'],
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            color: '#64748B',
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            color: '#E2E8F0',
+                            drawBorder: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Students',
+                            color: '#64748B',
+                            font: { family: 'Inter', weight: 500 }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#64748B',
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Score Band (%)',
+                            color: '#64748B',
+                            font: { family: 'Inter', weight: 500 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1E293B',
+                        titleFont: { family: 'Inter' },
+                        bodyFont: { family: 'Inter' }
+                    }
+                }
+            }
+        });
+    });
+
+    let sortDirection = 1; // 1 = asc, -1 = desc
+    function sortTableByScore() {
+        const table = document.querySelector(".table");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        
+        if (rows.length === 0 || rows[0].cells.length < 5) return;
+        
+        rows.sort((a, b) => {
+            const scoreCellA = a.querySelectorAll("td")[4]; 
+            const scoreCellB = b.querySelectorAll("td")[4];
+            
+            if (!scoreCellA || !scoreCellB) return 0;
+            
+            let scoreA = -2;
+            let scoreB = -2;
+            
+            const textA = scoreCellA.innerText.trim();
+            const textB = scoreCellB.innerText.trim();
+            
+            if (textA === 'A') scoreA = -1;
+            else if (textA !== '-') scoreA = parseFloat(textA) || 0;
+            
+            if (textB === 'A') scoreB = -1;
+            else if (textB !== '-') scoreB = parseFloat(textB) || 0;
+            
+            return (scoreA - scoreB) * sortDirection;
+        });
+        
+        // Toggle sort order and update icon
+        sortDirection = -sortDirection;
+        const sortIcon = document.getElementById("sortIcon");
+        if (sortDirection === 1) {
+            sortIcon.className = "bi bi-sort-down text-navy-600 ms-1";
+        } else {
+            sortIcon.className = "bi bi-sort-up text-navy-600 ms-1";
+        }
+        
+        // Re-append sorted rows
+        rows.forEach(row => tbody.appendChild(row));
+    }
+</script>
 {% endblock %}

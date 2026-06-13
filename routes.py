@@ -60,7 +60,28 @@ def faculty_dashboard():
     if not isinstance(current_user._get_current_object(), User):
         return redirect(url_for('main.student_dashboard'))
     exams = Exam.query.filter_by(faculty_id=current_user.id).order_by(Exam.created_at.desc()).all()
-    return render_template('faculty_dashboard.html', exams=exams)
+    
+    # Calculate stats
+    total_exams = len(exams)
+    active_exams = sum(1 for e in exams if e.allow_start)
+    
+    total_submissions = 0
+    completed_submissions = 0
+    for e in exams:
+        total_submissions += len(e.submissions)
+        completed_submissions += sum(1 for s in e.submissions if s.status == 'completed')
+        
+    avg_completion_rate = 0.0
+    if total_submissions > 0:
+        avg_completion_rate = round((completed_submissions / total_submissions) * 100, 1)
+        
+    return render_template(
+        'faculty_dashboard.html', 
+        exams=exams, 
+        total_exams=total_exams, 
+        active_exams=active_exams, 
+        avg_completion_rate=avg_completion_rate
+    )
 
 @main.route('/faculty/exam/create', methods=['GET', 'POST'])
 @login_required
@@ -845,6 +866,14 @@ def clone_exam(exam_id):
                 is_correct=opt.is_correct
             )
             db.session.add(new_opt)
+            
+    # Duplicate Student Allotments
+    for allotment in exam.allotments:
+        new_allotment = ExamAllotment(
+            exam_id=new_exam.id,
+            student_id=allotment.student_id
+        )
+        db.session.add(new_allotment)
             
     db.session.commit()
     return jsonify({'success': True, 'redirect': url_for('main.faculty_dashboard')})

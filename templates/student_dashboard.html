@@ -1,194 +1,183 @@
 {% extends "base.html" %}
 {% block content %}
-
-<!-- Student Info Card -->
-<div class="card mb-4 border-0 shadow-sm">
-    <div class="card-body">
-        <div class="row align-items-center">
-            <div class="col-md-1 text-center">
-                <div class="rounded-circle d-inline-flex align-items-center justify-content-center"
-                     style="width: 64px; height: 64px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-size: 1.5rem; font-weight: bold;">
-                    {{ student.name[0] | upper }}
+<div class="container mt-4">
+    <!-- Student Profile Header Card -->
+    <div class="card mb-4 border-0 shadow-sm bg-white" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="avatar-student shadow-sm">
+                        {{ student.name[0] | upper }}
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-11">
-                <h4 class="mb-1">{{ student.name }}</h4>
-                <div class="d-flex gap-3 text-muted">
-                    <span><i class="bi bi-hash"></i> {{ student.roll_no }}</span>
-                    <span><i class="bi bi-building"></i> {{ student.department }}</span>
-                    <span><i class="bi bi-mortarboard"></i> Semester {{ student.semester }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Stats Cards (Aggregating Online & Manual) -->
-<div class="row mb-4 g-3">
-    <div class="col-md-3">
-        <div class="card text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-            <div class="card-body text-center">
-                <i class="bi bi-clipboard2-data" style="font-size: 1.8rem;"></i>
-                <h3 class="fw-bold mt-2 mb-0">{{ total_exams }}</h3>
-                <small>Total Exams & Assignments</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
-            <div class="card-body text-center">
-                <i class="bi bi-check-circle" style="font-size: 1.8rem;"></i>
-                <h3 class="fw-bold mt-2 mb-0">{{ completed_count }}</h3>
-                <small>Submitted / Completed</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #f5576c, #ff6b6b);">
-            <div class="card-body text-center">
-                <i class="bi bi-clock-history" style="font-size: 1.8rem;"></i>
-                <h3 class="fw-bold mt-2 mb-0">{{ pending_count }}</h3>
-                <small>Pending / Absent</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-            <div class="card-body text-center">
-                <i class="bi bi-graph-up" style="font-size: 1.8rem;"></i>
-                <h3 class="fw-bold mt-2 mb-0">{{ avg_percentage }}%</h3>
-                <small>Overall Avg Score</small>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Performance Charts -->
-<div class="row mb-4">
-    <div class="col-md-8 mb-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="card-title text-primary"><i class="bi bi-graph-up-arrow"></i> Performance Over All Assessments</h6>
-                <div style="height: 250px; position: relative;">
-                    <canvas id="performanceChart"></canvas>
+                <div class="col mt-3 mt-md-0">
+                    <h4 class="student-name-text mb-2">{{ student.name }}</h4>
+                    <div class="d-flex flex-wrap gap-3 student-meta-text">
+                        <span><i class="bi bi-hash me-1" style="color: var(--color-navy-600);"></i> {{ student.roll_no }}</span>
+                        <span><i class="bi bi-building me-1" style="color: var(--color-navy-600);"></i> {{ student.department }}</span>
+                        <span><i class="bi bi-mortarboard me-1" style="color: var(--color-navy-600);"></i> Semester {{ student.semester }}</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body text-center">
-                <h6 class="card-title text-primary text-start"><i class="bi bi-pie-chart-fill"></i> Overall Participation</h6>
-                <div style="height: 220px; position: relative; margin-top: 15px;">
-                    <canvas id="participationChart"></canvas>
+
+    <!-- Stats Cards (Aggregating Online & Manual) -->
+    <div class="row mb-5 g-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <div class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Total Assessments</div>
+                <div class="code-mono fw-bold text-dark mb-0" style="font-size: 28px;">{{ total_exams }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <div class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Submitted</div>
+                <div class="code-mono fw-bold text-success mb-0" style="font-size: 28px;">{{ completed_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <div class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Pending / Absent</div>
+                <div class="code-mono fw-bold text-danger mb-0" style="font-size: 28px;">{{ pending_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="gradient-border-card text-center p-3 shadow-sm">
+                <div class="text-muted text-uppercase mb-2 small" style="font-weight: 600; letter-spacing: 0.05em;">Avg Score</div>
+                <div class="code-mono fw-bold text-primary mb-0" style="font-size: 28px;">{{ avg_percentage }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Charts -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            <div class="card border-0 shadow-sm h-100 bg-white" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold text-dark mb-4"><i class="bi bi-graph-up-arrow me-2" style="color: var(--color-navy-600);"></i> Performance Trend</h5>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 bg-white" style="border-radius: 12px;">
+                <div class="card-body p-4 text-center">
+                    <h5 class="card-title fw-bold text-dark text-start mb-4"><i class="bi bi-pie-chart-fill me-2" style="color: var(--color-navy-600);"></i> Overall Participation</h5>
+                    <div style="height: 220px; position: relative;">
+                        <canvas id="participationChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Allotted Online Exams -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <h4 class="mb-4 text-primary"><i class="bi bi-laptop"></i> Online Exams (UNNATI Exams)</h4>
-        <div class="row">
-            {% for sub in submissions %}
-            <div class="col-md-6 mb-3">
-                <div class="card h-100 border {% if sub.status == 'completed' %}border-success{% else %}border-warning{% endif %}">
-                    <div class="card-body">
+    <!-- Allotted Online Exams -->
+    <div class="card border-0 shadow-sm mb-5 bg-white" style="border-radius: 12px;">
+        <div class="card-body p-4">
+            <h4 class="mb-4 fw-bold text-dark"><i class="bi bi-laptop me-2" style="color: var(--color-navy-600);"></i> Online Exams</h4>
+            <div class="row g-4">
+                {% for sub in submissions %}
+                <div class="col-md-6">
+                    <div class="student-exam-card shadow-sm {% if sub.status == 'completed' %}status-completed{% elif sub.exam.allow_start %}status-pending{% else %}status-closed{% endif %}">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0">{{ sub.exam.title }}</h5>
-                            <span class="badge {% if sub.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
-                                {{ sub.status|title }}
-                            </span>
+                            <h5 class="fw-bold mb-0 text-dark">{{ sub.exam.title }}</h5>
+                            {% if sub.status == 'completed' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Completed</span>
+                            {% elif sub.exam.allow_start %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending</span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Closed</span>
+                            {% endif %}
                         </div>
-                        <h6 class="card-subtitle mb-3 text-muted">{{ sub.exam.subject }} &bull; {{ sub.exam.time_limit_mins }} mins</h6>
+                        <h6 class="mb-3 text-secondary small" style="font-weight: 500;">{{ sub.exam.subject }} &bull; {{ sub.exam.time_limit_mins }} mins</h6>
                         
                         {% if sub.status == 'completed' %}
-                            <div class="bg-light p-2 rounded">
-                                <strong>Score:</strong>
+                            <div class="p-3 rounded-3" style="background-color: var(--color-navy-50); border: 1px solid var(--color-navy-100);">
+                                <span class="text-secondary small d-block mb-1">Achieved Score</span>
                                 {% if sub.exam.allow_start %}
-                                <span class="text-muted fw-semibold">Awaiting Exam End</span>
+                                <span class="text-muted fw-semibold">Awaiting exam end</span>
                                 {% else %}
                                     {% if sub.score == -1.0 %}
-                                    <span class="text-danger fw-bold">A</span>
+                                    <span class="text-danger fw-bold code-mono">A (Absent)</span>
                                     {% else %}
-                                    <span class="text-success fw-bold">{{ sub.score }}</span>
+                                    <span class="text-success fw-bold code-mono" style="font-size: 1.25rem;">{{ sub.score }}</span>
                                     {% endif %}
                                 {% endif %}
                             </div>
                         {% else %}
                             {% if sub.exam.allow_start %}
-                                <a href="{{ url_for('main.take_exam', exam_id=sub.exam.id) }}" class="btn btn-success w-100">Take Exam Now</a>
+                                <a href="{{ url_for('main.take_exam', exam_id=sub.exam.id) }}" class="btn-take-exam">Take Exam Now</a>
                             {% else %}
-                                <button class="btn btn-secondary w-100" disabled>Exam Closed / Not Started</button>
+                                <button class="btn btn-navy-outline w-100" style="height: 44px; border-radius: 8px; font-weight: 500;" disabled>Exam Closed</button>
                             {% endif %}
                         {% endif %}
                     </div>
                 </div>
+                {% else %}
+                <div class="col-12 text-center text-muted py-4"><p>No online exams have been allotted to you yet.</p></div>
+                {% endfor %}
             </div>
-            {% else %}
-            <div class="col-12 text-center text-muted"><p>No online exams have been allotted to you yet.</p></div>
-            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Manual Graded Assignments (UNNATI) -->
+    <div class="card border-0 shadow-sm mb-4 bg-white" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-body p-4">
+            <h4 class="mb-4 fw-bold text-dark"><i class="bi bi-file-earmark-bar-graph me-2" style="color: var(--color-navy-600);"></i> Class &amp; Manual Assignments</h4>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Assignment</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Marks</th>
+                            <th>Percentage</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in manual_assessments %}
+                        <tr>
+                            <td class="fw-semibold text-dark">{{ a.assignment_group.name if a.assignment_group else "Manual Assignment" }}</td>
+                            <td><span class="badge bg-light text-secondary border border-light-subtle px-2 py-1">{{ a.subject }}</span></td>
+                            <td>
+                                {% if a.marks == -1 %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Absent</span>
+                                {% else %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Completed</span>
+                                {% endif %}
+                            </td>
+                            <td class="code-mono">
+                                {% if a.marks == -1 %}
+                                <span class="text-danger fw-bold">Absent</span>
+                                {% else %}
+                                {{ a.marks }} / {{ a.assignment_group.total_marks if a.assignment_group else '100' }}
+                                {% endif %}
+                            </td>
+                            <td class="code-mono">
+                                {% if a.marks != -1 and a.assignment_group %}
+                                    {{ ((a.marks / a.assignment_group.total_marks) * 100)|round(1) }}%
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ a.date.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No manual assignments recorded in UNNATI yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
-
-<!-- Manual Graded Assignments (UNNATI) -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <h4 class="mb-4 text-primary"><i class="bi bi-file-earmark-bar-graph"></i> Class & Manual Assignments (UNNATI)</h4>
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>Assignment</th>
-                        <th>Subject</th>
-                        <th>Status</th>
-                        <th>Marks</th>
-                        <th>Percentage</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for a in manual_assessments %}
-                    <tr>
-                        <td class="fw-bold">{{ a.assignment_group.name if a.assignment_group else "Manual Assignment" }}</td>
-                        <td><span class="badge bg-secondary">{{ a.subject }}</span></td>
-                        <td>
-                            {% if a.marks == -1 %}
-                            <span class="badge bg-danger">Absent</span>
-                            {% else %}
-                            <span class="badge bg-success">Completed</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if a.marks == -1 %}
-                            <span class="text-danger fw-bold">Absent</span>
-                            {% else %}
-                            {{ a.marks }} / {{ a.assignment_group.total_marks if a.assignment_group else '100' }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if a.marks != -1 and a.assignment_group %}
-                                {{ ((a.marks / a.assignment_group.total_marks) * 100)|round(1) }}%
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>{{ a.date.strftime('%Y-%m-%d') }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center text-muted">No manual assignments recorded in UNNATI yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
 {% endblock %}
 
 {% block scripts %}
@@ -211,12 +200,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 datasets: [{
                     label: 'Score %',
                     data: scores,
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderColor: '#2A5298',
+                    backgroundColor: 'rgba(42, 82, 152, 0.08)',
                     fill: true,
                     tension: 0.3,
                     pointRadius: 5,
-                    pointBackgroundColor: '#667eea',
+                    pointBackgroundColor: '#2A5298',
                     borderWidth: 2
                 }]
             },
@@ -224,18 +213,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: true, max: 100, title: { display: true, text: 'Percentage (%)' } }
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100, 
+                        ticks: {
+                            color: '#64748B',
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            color: '#E2E8F0',
+                            drawBorder: false
+                        },
+                        title: { 
+                            display: true, 
+                            text: 'Percentage (%)',
+                            color: '#64748B',
+                            font: { family: 'Inter', weight: 500 }
+                        } 
+                    },
+                    x: {
+                        ticks: {
+                            color: '#64748B',
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
                 },
-                plugins: { legend: { display: false } }
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1E293B',
+                        titleFont: { family: 'Inter' },
+                        bodyFont: { family: 'Inter' }
+                    }
+                }
             }
         });
     } else {
         var canvas = document.getElementById('performanceChart');
         var ctx = canvas.getContext('2d');
-        ctx.font = "16px sans-serif";
-        ctx.fillStyle = "#888";
+        ctx.font = "14px Inter, sans-serif";
+        ctx.fillStyle = "#64748B";
         ctx.textAlign = "center";
-        ctx.fillText("Complete a quiz or assignment to see performance trends", canvas.width / 2 || 150, canvas.height / 2 || 75);
+        ctx.fillText("Complete an exam or assignment to see performance trends", canvas.width / 2 || 150, canvas.height / 2 || 75);
     }
 
     // Participation Chart (Doughnut)
@@ -245,15 +267,29 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: ['Completed', 'Pending/Absent'],
             datasets: [{
                 data: [{{ completed_count }}, {{ pending_count }}],
-                backgroundColor: ['#43e97b', '#f5576c'],
-                hoverOffset: 8,
-                borderWidth: 2
+                backgroundColor: ['#22C55E', '#E63946'],
+                hoverOffset: 6,
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' } }
+            plugins: { 
+                legend: { 
+                    position: 'bottom',
+                    labels: {
+                        color: '#64748B',
+                        font: { family: 'Inter' }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1E293B',
+                    titleFont: { family: 'Inter' },
+                    bodyFont: { family: 'Inter' }
+                }
+            }
         }
     });
 });

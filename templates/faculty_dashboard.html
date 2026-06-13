@@ -1,49 +1,95 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Faculty Dashboard</h2>
-    <a href="{{ url_for('main.create_exam') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Create Exam</a>
-</div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-dark fw-bold mb-0">Faculty Dashboard</h2>
+        <a href="{{ url_for('main.create_exam') }}" class="btn btn-navy-outline px-4 py-2"><i class="bi bi-plus-lg me-2"></i> Create Exam</a>
+    </div>
 
-<div class="row">
-    {% for exam in exams %}
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">{{ exam.title }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ exam.subject }} &bull; {{ exam.time_limit_mins }} mins</h6>
-                <hr>
-                <div class="d-flex justify-content-between align-items-center">
+    <!-- Stat row at the top -->
+    <div class="row mb-5 g-4">
+        <div class="col-md-4">
+            <div class="gradient-border-card p-4 shadow-sm">
+                <div class="text-muted text-uppercase mb-2" style="font-size: 12px; font-weight: 600; letter-spacing: 0.05em;">Total Exams</div>
+                <div class="code-mono fw-bold text-dark" style="font-size: 28px; line-height: 1;">{{ total_exams }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="gradient-border-card p-4 shadow-sm">
+                <div class="text-muted text-uppercase mb-2" style="font-size: 12px; font-weight: 600; letter-spacing: 0.05em;">Active Exams</div>
+                <div class="code-mono fw-bold text-dark" style="font-size: 28px; line-height: 1;">{{ active_exams }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="gradient-border-card p-4 shadow-sm">
+                <div class="text-muted text-uppercase mb-2" style="font-size: 12px; font-weight: 600; letter-spacing: 0.05em;">Avg Completion Rate</div>
+                <div class="code-mono fw-bold text-dark" style="font-size: 28px; line-height: 1;">{{ avg_completion_rate }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-4 text-dark fw-semibold">Created Exams</h4>
+
+    <!-- Exam Cards -->
+    <div class="row">
+        {% for exam in exams %}
+        <div class="col-md-6 mb-4">
+            <div class="exam-dashboard-card shadow-sm {% if exam.allow_start %}exam-active{% else %}exam-inactive{% endif %}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-bold mb-0 text-dark">{{ exam.title }}</h5>
+                    {% if exam.allow_start %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 d-flex align-items-center" style="font-size: 11px;">
+                        <span class="pulsing-dot"></span> LIVE
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" style="font-size: 11px;">
+                        Closed
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3 d-flex align-items-center gap-2">
+                    <span class="badge-subject">{{ exam.subject }}</span>
+                    <span class="text-muted small"><i class="bi bi-clock me-1"></i> {{ exam.time_limit_mins }} mins</span>
+                </div>
+                
+                <hr class="my-3 text-muted" style="opacity: 0.15;">
+                
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div>
+                        <span class="text-muted small d-block mb-1">Assignment Code</span>
                         {% if exam.assignment_code %}
-                            <strong>Assignment Code:</strong> <span class="badge bg-info text-dark">{{ exam.assignment_code }}</span>
+                            <span class="assignment-code-text">{{ exam.assignment_code }}</span>
                         {% else %}
-                            <span class="text-muted">Not Started</span>
+                            <span class="text-muted small italic">Not Started</span>
                         {% endif %}
                     </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-secondary" onclick="cloneExam({{ exam.id }})">
-                            <i class="bi bi-files"></i> Clone
-                        </button>
+                    <div class="d-flex gap-2 flex-wrap">
                         {% if exam.allow_start %}
-                            <a href="{{ url_for('main.download_exam', exam_id=exam.id) }}" class="btn btn-sm btn-outline-success">
-                                <i class="bi bi-download"></i> Download Paper
+                            <a href="{{ url_for('main.download_exam', exam_id=exam.id) }}" class="btn btn-sm btn-green-outline">
+                                <i class="bi bi-download"></i> Download
                             </a>
-                            <button class="btn btn-sm btn-danger" onclick="toggleStart({{ exam.id }})">Stop Exam</button>
+                            <button class="btn btn-sm btn-red-solid" onclick="toggleStart({{ exam.id }})">Stop Exam</button>
                         {% else %}
-                            <a href="{{ url_for('main.edit_exam', exam_id=exam.id) }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ url_for('main.edit_exam', exam_id=exam.id) }}" class="btn btn-sm btn-navy-outline">
                                 <i class="bi bi-pencil"></i> Edit Exam
                             </a>
-                            <button class="btn btn-sm btn-success" onclick="toggleStart({{ exam.id }})">Allow Start</button>
+                            <button class="btn btn-sm btn-ember-solid" onclick="toggleStart({{ exam.id }})">Allow Start</button>
                         {% endif %}
+                        <button class="btn btn-sm btn-gray-outline" onclick="cloneExam({{ exam.id }})">
+                            <i class="bi bi-files"></i> Clone
+                        </button>
+                        <a href="{{ url_for('main.exam_stats', exam_id=exam.id) }}" class="btn btn-sm btn-navy-outline" title="View Stats">
+                            <i class="bi bi-bar-chart"></i> Stats
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="col-12"><p class="text-muted">No exams created yet.</p></div>
+        {% endfor %}
     </div>
-    {% else %}
-    <div class="col-12"><p class="text-muted">No exams created yet.</p></div>
-    {% endfor %}
 </div>
 {% endblock %}
 
