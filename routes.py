@@ -264,12 +264,81 @@ def take_exam(exam_id):
     if not submission.started_at:
         submission.started_at = datetime.utcnow()
         db.session.commit()
-        
+
+    import json
+    import random
+
+    # Fetch all questions for the exam and map by ID
+    questions_dict = {q.id: q for q in submission.exam.questions}
+
+    # Reconcile question order
+    order_updated = False
+    if not submission.question_order:
+        q_ids = list(questions_dict.keys())
+        random.shuffle(q_ids)
+        submission.question_order = ",".join(map(str, q_ids))
+        order_updated = True
+
+    q_order_ids = []
+    if submission.question_order:
+        q_order_ids = [int(x) for x in submission.question_order.split(',') if x]
+
+    # Remove deleted questions from order
+    clean_order_ids = [q_id for q_id in q_order_ids if q_id in questions_dict]
+    if len(clean_order_ids) != len(q_order_ids):
+        order_updated = True
+
+    # Add new questions to order
+    for q_id in questions_dict.keys():
+        if q_id not in clean_order_ids:
+            clean_order_ids.append(q_id)
+            order_updated = True
+
+    if order_updated:
+        submission.question_order = ",".join(map(str, clean_order_ids))
+        q_order_ids = clean_order_ids
+
+    # Initialize states: visited starts with the first question ID. marked is empty.
+    states = {"visited": [], "marked": []}
+    if submission.question_states:
+        try:
+            states = json.loads(submission.question_states)
+        except Exception:
+            pass
+
+    if "visited" not in states:
+        states["visited"] = []
+    if "marked" not in states:
+        states["marked"] = []
+
+    # Ensure the first question is marked as visited
+    if q_order_ids:
+        first_q_id = q_order_ids[0]
+        if first_q_id not in states["visited"]:
+            states["visited"].append(first_q_id)
+            submission.question_states = json.dumps(states)
+            order_updated = True
+
+    if order_updated:
+        db.session.commit()
+
+    # Sort questions according to stored order
+    ordered_questions = [questions_dict[q_id] for q_id in q_order_ids if q_id in questions_dict]
+
     # Fetch existing answers for this submission
     saved_answers = StudentAnswer.query.filter_by(submission_id=submission.id).all()
-    saved_option_ids = {ans.option_id for ans in saved_answers}
-        
-    return render_template('take_exam.html', exam=submission.exam, submission=submission, saved_option_ids=saved_option_ids)
+    saved_option_ids = {ans.option_id for ans in saved_answers if ans.option_id is not None}
+    answered_q_ids = list({ans.question_id for ans in saved_answers if ans.option_id is not None})
+
+    return render_template(
+        'take_exam.html', 
+        exam=submission.exam, 
+        submission=submission, 
+        questions=ordered_questions,
+        saved_option_ids=saved_option_ids,
+        states=states,
+        answered_q_ids=answered_q_ids
+    )
 
 
 @main.route('/student/exam/<int:exam_id>/save_answer', methods=['POST'])
@@ -298,6 +367,81 @@ def save_answer(exam_id):
     return jsonify({'success': True})
 
 
+@main.route('/student/exam/<int:exam_id>/update_status', methods=['POST'])
+@login_required
+def update_status(exam_id):
+    if not isinstance(current_user._get_current_object(), Student):
+        return jsonify({'error': 'Unauthorized'}), 403
+        
+    submission = ExamSubmission.query.filter_by(exam_id=exam_id, student_id=current_user.id).first_or_404()
+    if submission.status == 'completed':
+        return jsonify({'error': 'Exam already submitted'}), 400
+        
+    data = request.json
+    current_q_id = data.get('current_question_id')
+    option_ids = [int(oid) for oid in data.get('option_ids', []) if oid is not None]
+    next_q_id = data.get('next_question_id')
+    marked = data.get('marked', False)
+    
+    import json
+    
+    # Update Student Answers for current question if it is provided
+    if current_q_id is not None:
+        current_q_id = int(current_q_id)
+        # Delete existing answers for this question and submission
+        StudentAnswer.query.filter_by(submission_id=submission.id, question_id=current_q_id).delete()
+        
+        # Insert new answers
+        for opt_id in option_ids:
+            ans = StudentAnswer(submission_id=submission.id, question_id=current_q_id, option_id=opt_id)
+            db.session.add(ans)
+            
+    # Load and update states
+    states = {"visited": [], "marked": []}
+    if submission.question_states:
+        try:
+            states = json.loads(submission.question_states)
+        except Exception:
+            pass
+            
+    if "visited" not in states:
+        states["visited"] = []
+    if "marked" not in states:
+        states["marked"] = []
+        
+    # Mark current question as visited
+    if current_q_id is not None and current_q_id not in states["visited"]:
+        states["visited"].append(current_q_id)
+        
+    # Mark next question as visited
+    if next_q_id is not None:
+        next_q_id = int(next_q_id)
+        if next_q_id not in states["visited"]:
+            states["visited"].append(next_q_id)
+            
+    # Update marked status for current question
+    if current_q_id is not None:
+        if marked:
+            if current_q_id not in states["marked"]:
+                states["marked"].append(current_q_id)
+        else:
+            if current_q_id in states["marked"]:
+                states["marked"].remove(current_q_id)
+                
+    submission.question_states = json.dumps(states)
+    db.session.commit()
+    
+    # Get all currently answered question IDs to return
+    answered_answers = StudentAnswer.query.filter_by(submission_id=submission.id).all()
+    answered_q_ids = list({ans.question_id for ans in answered_answers if ans.option_id is not None})
+    
+    return jsonify({
+        'success': True,
+        'states': states,
+        'answered_q_ids': answered_q_ids
+    })
+
+
 @main.route('/student/exam/<int:exam_id>/submit', methods=['POST'])
 @login_required
 def submit_exam(exam_id):
@@ -308,29 +452,44 @@ def submit_exam(exam_id):
     if submission.status == 'completed':
         return jsonify({'error': 'Already submitted'}), 400
         
-    data = request.json
+    data = request.json or {}
     answers_data = data.get('answers', {})
     
-    # Clear existing answers to avoid duplication
-    StudentAnswer.query.filter_by(submission_id=submission.id).delete()
-    
+    # If answers_data is provided (from the old UI or fallback), we save them:
+    if answers_data:
+        # Clear existing answers to avoid duplication
+        StudentAnswer.query.filter_by(submission_id=submission.id).delete()
+        
+        for q in submission.exam.questions:
+            selected_option_ids = answers_data.get(str(q.id), [])
+            if not isinstance(selected_option_ids, list):
+                selected_option_ids = [selected_option_ids]
+                
+            for opt_id in selected_option_ids:
+                if opt_id:
+                    ans = StudentAnswer(submission_id=submission.id, question_id=q.id, option_id=int(opt_id))
+                    db.session.add(ans)
+                    
+        db.session.commit()
+        
     total_score = 0.0
+    # Fetch all answers saved in the database
+    saved_answers = StudentAnswer.query.filter_by(submission_id=submission.id).all()
     
+    # Group by question_id
+    saved_by_q = {}
+    for ans in saved_answers:
+        if ans.question_id not in saved_by_q:
+            saved_by_q[ans.question_id] = []
+        saved_by_q[ans.question_id].append(ans.option_id)
+        
     for q in submission.exam.questions:
-        selected_option_ids = answers_data.get(str(q.id), [])
-        if not isinstance(selected_option_ids, list):
-            selected_option_ids = [selected_option_ids]
-            
+        selected_option_ids = saved_by_q.get(q.id, [])
         correct_options = [opt for opt in q.options if opt.is_correct]
         correct_option_ids = [opt.id for opt in correct_options]
         
-        for opt_id in selected_option_ids:
-            if opt_id:
-                ans = StudentAnswer(submission_id=submission.id, question_id=q.id, option_id=int(opt_id))
-                db.session.add(ans)
-                
-        correctly_selected = sum(1 for oid in selected_option_ids if int(oid) in correct_option_ids)
-        incorrectly_selected = sum(1 for oid in selected_option_ids if int(oid) not in correct_option_ids)
+        correctly_selected = sum(1 for oid in selected_option_ids if oid in correct_option_ids)
+        incorrectly_selected = sum(1 for oid in selected_option_ids if oid not in correct_option_ids)
         
         q_score = 0
         if len(correct_options) > 0:
@@ -689,4 +848,3 @@ def clone_exam(exam_id):
             
     db.session.commit()
     return jsonify({'success': True, 'redirect': url_for('main.faculty_dashboard')})
-

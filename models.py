@@ -151,6 +151,8 @@ class ExamSubmission(db.Model):
     status = db.Column(db.String(50), default='pending') # 'pending', 'completed'
     started_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
+    question_order = db.Column(db.Text, nullable=True)
+    question_states = db.Column(db.Text, nullable=True)
     
     student = db.relationship('Student', backref='exam_submissions')
 

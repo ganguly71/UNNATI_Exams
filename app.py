@@ -50,7 +50,9 @@ def create_app():
             ("options", "is_correct", "BOOLEAN DEFAULT FALSE"),
             ("assignment_groups", "threshold_percent", "FLOAT NOT NULL DEFAULT 50.0"),
             ("remedial_schedules", "assignment_group_id", "INTEGER REFERENCES assignment_groups(id)"),
-            ("students", "password_hash", "VARCHAR(255)")
+            ("students", "password_hash", "VARCHAR(255)"),
+            ("exam_submissions", "question_order", "TEXT"),
+            ("exam_submissions", "question_states", "TEXT")
         ]
         
         for table_name, col_name, col_def in required_columns:
