@@ -52,6 +52,7 @@ def create_app():
             ("remedial_schedules", "assignment_group_id", "INTEGER REFERENCES assignment_groups(id)"),
             ("students", "password_hash", "VARCHAR(255)"),
             ("students", "enrolled_next_sem", "BOOLEAN DEFAULT FALSE"),
+            ("students", "last_sem_upgrade_date", "TIMESTAMP"),
             ("exam_submissions", "question_order", "TEXT"),
             ("exam_submissions", "question_states", "TEXT")
         ]

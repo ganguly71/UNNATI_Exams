@@ -44,6 +44,7 @@ class Student(db.Model, UserMixin):
     department = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(255), nullable=True)
     enrolled_next_sem = db.Column(db.Boolean, default=False)
+    last_sem_upgrade_date = db.Column(db.DateTime, nullable=True)
     
     assessments = db.relationship('Assessment', backref='student', lazy=True, cascade="all, delete-orphan")
     classifications = db.relationship('Classification', backref='student', lazy=True, cascade="all, delete-orphan")

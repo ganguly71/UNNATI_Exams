@@ -258,6 +258,12 @@ def student_dashboard():
     avg_percentage = round(total_percentage_sum / valid_scores_count, 1) if valid_scores_count > 0 else 0.0
     
     enrollment_enabled = SystemSetting.get_val('semester_enrollment_enabled', 'false') == 'true'
+    days_left = 0
+    if student.last_sem_upgrade_date:
+        days_since = (datetime.utcnow() - student.last_sem_upgrade_date).days
+        if days_since < 30:
+            days_left = 30 - days_since
+
     return render_template(
         'student_dashboard.html',
         submissions=online_submissions,
@@ -268,7 +274,8 @@ def student_dashboard():
         pending_count=pending_count,
         avg_percentage=avg_percentage,
         completed_details=completed_details,
-        enrollment_enabled=enrollment_enabled
+        enrollment_enabled=enrollment_enabled,
+        days_left=days_left
     )
 
 @main.route('/student/exam/<int:exam_id>')
@@ -916,8 +923,17 @@ def enroll_next_semester():
     if student.enrolled_next_sem:
         return jsonify({'success': False, 'error': 'You have already enrolled for the next semester.'}), 400
         
+    if student.last_sem_upgrade_date:
+        days_since_upgrade = (datetime.utcnow() - student.last_sem_upgrade_date).days
+        if days_since_upgrade < 30:
+            return jsonify({
+                'success': False, 
+                'error': f'You can only upgrade your semester once in a month. Please wait another {30 - days_since_upgrade} days.'
+            }), 400
+        
     student.semester += 1
     student.enrolled_next_sem = True
+    student.last_sem_upgrade_date = datetime.utcnow()
     db.session.commit()
     
     flash(f'Successfully enrolled to Semester {student.semester}!', 'success')
