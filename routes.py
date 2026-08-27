@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_user, logout_user, login_required, current_user
-from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment, SystemSetting, SUBJECTS
+from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment, SystemSetting, SUBJECTS, get_ist_now
 from datetime import datetime
 import uuid
 import os
@@ -184,12 +184,12 @@ def start_exam(exam_id):
                     
                     submission.score = total_score
                     submission.status = 'completed'
-                    submission.completed_at = datetime.utcnow()
+                    submission.completed_at = get_ist_now()
                 else:
                     # Student did not attempt/open the test, mark as absent (-1)
                     submission.score = -1.0
                     submission.status = 'completed'
-                    submission.completed_at = datetime.utcnow()
+                    submission.completed_at = get_ist_now()
     
     db.session.commit()
     return jsonify({'success': True, 'allow_start': exam.allow_start, 'assignment_code': exam.assignment_code})
@@ -276,7 +276,7 @@ def student_dashboard():
     enrollment_enabled = SystemSetting.get_val('semester_enrollment_enabled', 'false') == 'true'
     days_left = 0
     if student.last_sem_upgrade_date:
-        days_since = (datetime.utcnow() - student.last_sem_upgrade_date).days
+        days_since = (get_ist_now() - student.last_sem_upgrade_date).days
         if days_since < 30:
             days_left = 30 - days_since
 
@@ -310,7 +310,7 @@ def take_exam(exam_id):
         return redirect(url_for('main.student_dashboard'))
         
     if not submission.started_at:
-        submission.started_at = datetime.utcnow()
+        submission.started_at = get_ist_now()
         db.session.commit()
 
     import json
@@ -550,7 +550,7 @@ def submit_exam(exam_id):
         
     submission.score = total_score
     submission.status = 'completed'
-    submission.completed_at = datetime.utcnow()
+    submission.completed_at = get_ist_now()
     db.session.commit()
     
     return jsonify({'success': True, 'redirect': url_for('main.student_dashboard')})
@@ -948,7 +948,7 @@ def enroll_next_semester():
         return jsonify({'success': False, 'error': 'You have already enrolled for the next semester.'}), 400
         
     if student.last_sem_upgrade_date:
-        days_since_upgrade = (datetime.utcnow() - student.last_sem_upgrade_date).days
+        days_since_upgrade = (get_ist_now() - student.last_sem_upgrade_date).days
         if days_since_upgrade < 30:
             return jsonify({
                 'success': False, 
@@ -957,7 +957,7 @@ def enroll_next_semester():
         
     student.semester += 1
     student.enrolled_next_sem = True
-    student.last_sem_upgrade_date = datetime.utcnow()
+    student.last_sem_upgrade_date = get_ist_now()
     db.session.commit()
     
     flash(f'Successfully enrolled to Semester {student.semester}!', 'success')

@@ -209,7 +209,7 @@
 {% block scripts %}
 <script>
     const examId = {{ exam.id }};
-    const startedAtStr = "{{ submission.started_at.isoformat() }}Z";
+    const startedAtStr = "{{ submission.started_at.isoformat() }}+05:30";
     const startedAt = new Date(startedAtStr).getTime();
     const timeLimitMins = {{ exam.time_limit_mins }};
     const totalTimeLimitMs = timeLimitMins * 60 * 1000;
