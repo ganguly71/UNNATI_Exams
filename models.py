@@ -124,6 +124,10 @@ class Exam(db.Model):
     submissions = db.relationship('ExamSubmission', backref='exam', lazy=True, cascade="all, delete-orphan")
     faculty = db.relationship('User', backref='created_exams')
 
+    @property
+    def total_marks(self):
+        return sum(q.marks_awarded for q in self.questions)
+
 class Question(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True)
@@ -163,6 +167,17 @@ class ExamSubmission(db.Model):
     question_states = db.Column(db.Text, nullable=True)
     
     student = db.relationship('Student', backref='exam_submissions')
+
+    @property
+    def score_percentage(self):
+        if self.score is None:
+            return None
+        if self.score == -1.0:
+            return -1.0
+        total = self.exam.total_marks
+        if total > 0:
+            return round((self.score / total) * 100, 1)
+        return 0.0
 
 class StudentAnswer(db.Model):
     __tablename__ = 'student_answers'

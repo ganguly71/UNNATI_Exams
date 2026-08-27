@@ -593,8 +593,8 @@ def faculty_exams():
         total_allotted = len(submissions)
         completed = [s for s in submissions if s.status == 'completed']
         completed_count = len(completed)
-        scores = [s.score for s in completed if s.score is not None and s.score != -1]
-        avg_score = round(sum(scores) / len(scores), 2) if scores else 0
+        scores = [s.score_percentage for s in completed if s.score is not None and s.score != -1]
+        avg_score = round(sum(scores) / len(scores), 1) if scores else 0
         max_score = max(scores) if scores else 0
         exam_stats.append({
             'exam': exam,
@@ -612,9 +612,9 @@ def exam_stats(exam_id):
         return redirect(url_for('main.index'))
     exam = Exam.query.get_or_404(exam_id)
     submissions = ExamSubmission.query.filter_by(exam_id=exam.id).all()
-    scores = [s.score for s in submissions if s.status == 'completed' and s.score is not None and s.score != -1]
+    scores = [s.score_percentage for s in submissions if s.status == 'completed' and s.score is not None and s.score != -1]
     
-    avg_score = round(sum(scores) / len(scores), 2) if scores else 0
+    avg_score = round(sum(scores) / len(scores), 1) if scores else 0
     max_score = max(scores) if scores else 0
     min_score = min(scores) if scores else 0
     
