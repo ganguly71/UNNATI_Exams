@@ -94,6 +94,27 @@ def create_app():
         db.create_all()
         run_migrations()
 
+        # Seed/Reset default admin user
+        try:
+            admin = User.query.filter_by(email='admin@example.com').first()
+            if not admin:
+                # Convert user with ID 1 if exists, otherwise create new
+                admin = User.query.get(1)
+                if admin:
+                    admin.email = 'admin@example.com'
+                    admin.set_password("asdfghjkl;'")
+                    admin.role = 'admin'
+                else:
+                    admin = User(name="System Admin", email="admin@example.com", role="admin")
+                    admin.set_password("asdfghjkl;'")
+                    db.session.add(admin)
+            else:
+                admin.set_password("asdfghjkl;'")
+                admin.role = 'admin'
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
     return app
 
 if __name__ == '__main__':
