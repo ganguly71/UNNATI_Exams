@@ -29,6 +29,11 @@
                     </div>
                     <div class="card-body p-4" style="padding-left: 0 !important; padding-right: 0 !important;">
                         <h4 class="mb-4 text-dark" style="font-family: 'Inter', sans-serif; font-size: 18px; line-height: 1.7; font-weight: 400;">{{ q.text }}</h4>
+                        {% if q.image_url %}
+                        <div class="mb-4 text-center">
+                            <img src="{{ q.image_url }}" class="img-fluid rounded shadow-sm border" style="max-height: 350px;" alt="Question Image">
+                        </div>
+                        {% endif %}
                         <hr class="text-muted mb-4" style="opacity: 0.15;">
                         <div class="options-container">
                             {% for opt in q.options %}

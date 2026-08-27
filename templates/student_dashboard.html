@@ -35,7 +35,7 @@
                         {% if student.enrolled_next_sem %}
                             You have successfully enrolled in Semester {{ student.semester }} for the upcoming term.
                         {% elif days_left > 0 %}
-                            Enrollment for the next semester is open, but you can only upgrade your semester once in a month. (Locked for another {{ days_left }} days).
+                            Enrollment for the next semester is open, but you can only upgrade your semester once in a semester. (Locked for another {{ days_left }} days).
                         {% else %}
                             Enrollment for the next semester is open! You can now enroll in Semester {{ student.semester + 1 }}.
                         {% endif %}

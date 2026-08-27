@@ -126,6 +126,7 @@ class Question(db.Model):
     text = db.Column(db.Text, nullable=False)
     marks_awarded = db.Column(db.Float, nullable=False, default=1.0)
     marks_deducted = db.Column(db.Float, nullable=False, default=0.0)
+    image_url = db.Column(db.String(500), nullable=True)
 
     options = db.relationship('Option', backref='question', lazy=True, cascade="all, delete-orphan")
 

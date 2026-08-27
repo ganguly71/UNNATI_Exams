@@ -46,6 +46,7 @@ def create_app():
             ("questions", "text", "TEXT"),
             ("questions", "marks_awarded", "FLOAT NOT NULL DEFAULT 1.0"),
             ("questions", "marks_deducted", "FLOAT NOT NULL DEFAULT 0.0"),
+            ("questions", "image_url", "VARCHAR(500)"),
             ("options", "text", "TEXT"),
             ("options", "is_correct", "BOOLEAN DEFAULT FALSE"),
             ("assignment_groups", "threshold_percent", "FLOAT NOT NULL DEFAULT 50.0"),

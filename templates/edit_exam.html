@@ -39,6 +39,19 @@
                     </div>
                     <textarea class="form-control mb-3 q-textarea q-text" placeholder="Enter question text here..." oninput="autoResizeTextarea(this)" required>{{ q.text }}</textarea>
                     
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-semibold">Question Image (Optional)</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="file" class="form-control login-input q-image-file" accept="image/*" onchange="uploadQuestionImage(this, 'exist_{{ loop.index }}')" style="max-width: 300px;">
+                            <input type="hidden" class="q-image-url" id="url_exist_{{ loop.index }}" value="{{ q.image_url or '' }}">
+                            <div class="spinner-border spinner-border-sm text-primary d-none q-upload-spinner" id="spinner_exist_{{ loop.index }}" role="status"></div>
+                            <span class="text-success small {% if not q.image_url %}d-none{% endif %} q-upload-success" id="success_exist_{{ loop.index }}"><i class="bi bi-check-circle-fill me-1"></i> Uploaded</span>
+                        </div>
+                        <div class="mt-2 {% if not q.image_url %}d-none{% endif %} q-image-preview-container" id="preview_container_exist_{{ loop.index }}">
+                            <img src="{{ q.image_url or '' }}" class="img-thumbnail q-image-preview" id="preview_exist_{{ loop.index }}" style="max-height: 150px; border-radius: 8px;">
+                        </div>
+                    </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6 mb-2 mb-md-0">
                             <label class="form-label text-muted small fw-semibold">Marks Awarded</label>
@@ -150,6 +163,19 @@ function addQuestion() {
             </div>
             <textarea class="form-control mb-3 q-textarea q-text" placeholder="Enter question text here..." oninput="autoResizeTextarea(this)" required></textarea>
             
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-semibold">Question Image (Optional)</label>
+                <div class="d-flex align-items-center gap-3">
+                    <input type="file" class="form-control login-input q-image-file" accept="image/*" onchange="uploadQuestionImage(this, '${qId}')" style="max-width: 300px;">
+                    <input type="hidden" class="q-image-url" id="url_${qId}" value="">
+                    <div class="spinner-border spinner-border-sm text-primary d-none q-upload-spinner" id="spinner_${qId}" role="status"></div>
+                    <span class="text-success small d-none q-upload-success" id="success_${qId}"><i class="bi bi-check-circle-fill me-1"></i> Uploaded</span>
+                </div>
+                <div class="mt-2 d-none q-image-preview-container" id="preview_container_${qId}">
+                    <img src="" class="img-thumbnail q-image-preview" id="preview_${qId}" style="max-height: 150px; border-radius: 8px;">
+                </div>
+            </div>
+
             <div class="row mb-3">
                 <div class="col-md-6 mb-2 mb-md-0">
                     <label class="form-label text-muted small fw-semibold">Marks Awarded</label>
@@ -240,6 +266,7 @@ function submitExam() {
             text: textVal,
             marks_awarded: awardedVal,
             marks_deducted: deductedVal,
+            image_url: qCard.querySelector('.q-image-url').value,
             options: []
         };
         
@@ -286,6 +313,48 @@ function submitExam() {
         }
     });
 }
+
+function uploadQuestionImage(input, qId) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const spinner = document.getElementById(`spinner_${qId}`);
+    const success = document.getElementById(`success_${qId}`);
+    const previewContainer = document.getElementById(`preview_container_${qId}`);
+    const previewImg = document.getElementById(`preview_${qId}`);
+    const hiddenUrlInput = document.getElementById(`url_${qId}`);
+
+    // Show spinner, hide success and preview
+    spinner.classList.remove('d-none');
+    success.classList.add('d-none');
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    fetch('/admin/upload_image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        spinner.classList.add('d-none');
+        if (data.success) {
+            hiddenUrlInput.value = data.image_url;
+            previewImg.src = data.image_url;
+            previewContainer.classList.remove('d-none');
+            success.classList.remove('d-none');
+        } else {
+            alert(data.error || 'Failed to upload image');
+            input.value = ''; // Reset file input
+        }
+    })
+    .catch(err => {
+        spinner.classList.add('d-none');
+        alert('An error occurred during file upload');
+        input.value = '';
+    });
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('studentSearchInput');

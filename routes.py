@@ -3,6 +3,16 @@ from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment, SystemSetting, SUBJECTS
 from datetime import datetime
 import uuid
+import os
+import cloudinary
+import cloudinary.uploader
+
+# Cloudinary configuration
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+)
 
 main = Blueprint('main', __name__)
 
@@ -103,7 +113,13 @@ def create_exam():
         
         # Add questions
         for q_data in data.get('questions', []):
-            question = Question(exam_id=exam.id, text=q_data['text'], marks_awarded=float(q_data['marks_awarded']), marks_deducted=float(q_data['marks_deducted']))
+            question = Question(
+                exam_id=exam.id,
+                text=q_data['text'],
+                marks_awarded=float(q_data['marks_awarded']),
+                marks_deducted=float(q_data['marks_deducted']),
+                image_url=q_data.get('image_url')
+            )
             db.session.add(question)
             db.session.commit()
             
@@ -710,8 +726,15 @@ def edit_exam(exam_id):
                 question.text = q_data['text']
                 question.marks_awarded = float(q_data['marks_awarded'])
                 question.marks_deducted = float(q_data['marks_deducted'])
+                question.image_url = q_data.get('image_url')
             else:
-                question = Question(exam_id=exam.id, text=q_data['text'], marks_awarded=float(q_data['marks_awarded']), marks_deducted=float(q_data['marks_deducted']))
+                question = Question(
+                    exam_id=exam.id,
+                    text=q_data['text'],
+                    marks_awarded=float(q_data['marks_awarded']),
+                    marks_deducted=float(q_data['marks_deducted']),
+                    image_url=q_data.get('image_url')
+                )
                 db.session.add(question)
                 db.session.commit()
                 
@@ -865,7 +888,8 @@ def clone_exam(exam_id):
             exam_id=new_exam.id,
             text=q.text,
             marks_awarded=q.marks_awarded,
-            marks_deducted=q.marks_deducted
+            marks_deducted=q.marks_deducted,
+            image_url=q.image_url
         )
         db.session.add(new_q)
         db.session.commit()
@@ -938,3 +962,24 @@ def enroll_next_semester():
     
     flash(f'Successfully enrolled to Semester {student.semester}!', 'success')
     return jsonify({'success': True, 'new_semester': student.semester})
+
+
+@main.route('/admin/upload_image', methods=['POST'])
+@login_required
+def upload_image():
+    if not isinstance(current_user._get_current_object(), User):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+        
+    if 'image' not in request.files:
+        return jsonify({'success': False, 'error': 'No image file uploaded'}), 400
+        
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'Empty filename'}), 400
+        
+    try:
+        upload_result = cloudinary.uploader.upload(file)
+        image_url = upload_result.get('secure_url')
+        return jsonify({'success': True, 'image_url': image_url})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
