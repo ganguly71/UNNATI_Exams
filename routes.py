@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_user, logout_user, login_required, current_user
-from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment, SUBJECTS
+from models import db, User, Student, Exam, Question, Option, ExamAllotment, ExamSubmission, StudentAnswer, Assessment, SystemSetting, SUBJECTS
 from datetime import datetime
 import uuid
 
@@ -75,12 +75,14 @@ def faculty_dashboard():
     if total_submissions > 0:
         avg_completion_rate = round((completed_submissions / total_submissions) * 100, 1)
         
+    enrollment_enabled = SystemSetting.get_val('semester_enrollment_enabled', 'false') == 'true'
     return render_template(
         'faculty_dashboard.html', 
         exams=exams, 
         total_exams=total_exams, 
         active_exams=active_exams, 
-        avg_completion_rate=avg_completion_rate
+        avg_completion_rate=avg_completion_rate,
+        enrollment_enabled=enrollment_enabled
     )
 
 @main.route('/faculty/exam/create', methods=['GET', 'POST'])
@@ -255,6 +257,7 @@ def student_dashboard():
     
     avg_percentage = round(total_percentage_sum / valid_scores_count, 1) if valid_scores_count > 0 else 0.0
     
+    enrollment_enabled = SystemSetting.get_val('semester_enrollment_enabled', 'false') == 'true'
     return render_template(
         'student_dashboard.html',
         submissions=online_submissions,
@@ -264,7 +267,8 @@ def student_dashboard():
         completed_count=completed_count,
         pending_count=pending_count,
         avg_percentage=avg_percentage,
-        completed_details=completed_details
+        completed_details=completed_details,
+        enrollment_enabled=enrollment_enabled
     )
 
 @main.route('/student/exam/<int:exam_id>')
@@ -877,3 +881,44 @@ def clone_exam(exam_id):
             
     db.session.commit()
     return jsonify({'success': True, 'redirect': url_for('main.faculty_dashboard')})
+
+
+@main.route('/admin/toggle_enrollment', methods=['POST'])
+@login_required
+def toggle_enrollment():
+    if not isinstance(current_user._get_current_object(), User) or current_user.role != 'admin':
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    data = request.get_json() or {}
+    enabled = data.get('enabled', False)
+    
+    SystemSetting.set_val('semester_enrollment_enabled', 'true' if enabled else 'false')
+    
+    if enabled:
+        # Reset enrolled_next_sem flag for all students so they can enroll in the new semester
+        db.session.query(Student).update({Student.enrolled_next_sem: False})
+        db.session.commit()
+        
+    return jsonify({'success': True, 'enabled': enabled})
+
+
+@main.route('/student/enroll_next_semester', methods=['POST'])
+@login_required
+def enroll_next_semester():
+    if not isinstance(current_user._get_current_object(), Student):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    enabled_val = SystemSetting.get_val('semester_enrollment_enabled', 'false')
+    if enabled_val != 'true':
+        return jsonify({'success': False, 'error': 'Semester enrollment is currently closed by the Admin.'}), 400
+    
+    student = current_user
+    if student.enrolled_next_sem:
+        return jsonify({'success': False, 'error': 'You have already enrolled for the next semester.'}), 400
+        
+    student.semester += 1
+    student.enrolled_next_sem = True
+    db.session.commit()
+    
+    flash(f'Successfully enrolled to Semester {student.semester}!', 'success')
+    return jsonify({'success': True, 'new_semester': student.semester})

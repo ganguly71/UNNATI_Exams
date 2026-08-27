@@ -43,6 +43,7 @@ class Student(db.Model, UserMixin):
     semester = db.Column(db.Integer, nullable=False)
     department = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(255), nullable=True)
+    enrolled_next_sem = db.Column(db.Boolean, default=False)
     
     assessments = db.relationship('Assessment', backref='student', lazy=True, cascade="all, delete-orphan")
     classifications = db.relationship('Classification', backref='student', lazy=True, cascade="all, delete-orphan")
@@ -166,3 +167,26 @@ class StudentAnswer(db.Model):
     submission = db.relationship('ExamSubmission', backref=db.backref('answers', cascade="all, delete-orphan"))
     question = db.relationship('Question')
     option = db.relationship('Option')
+
+
+class SystemSetting(db.Model):
+    __tablename__ = 'system_settings'
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.String(255), nullable=False)
+
+    @classmethod
+    def get_val(cls, key, default=None):
+        setting = cls.query.filter_by(key=key).first()
+        return setting.value if setting else default
+
+    @classmethod
+    def set_val(cls, key, value):
+        setting = cls.query.filter_by(key=key).first()
+        if not setting:
+            setting = cls(key=key, value=value)
+            db.session.add(setting)
+        else:
+            setting.value = value
+        db.session.commit()
+

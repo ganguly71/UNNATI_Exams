@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from models import db, User, Student
+from models import db, User, Student, SystemSetting
 from flask_login import LoginManager
 
 def create_app():
@@ -51,6 +51,7 @@ def create_app():
             ("assignment_groups", "threshold_percent", "FLOAT NOT NULL DEFAULT 50.0"),
             ("remedial_schedules", "assignment_group_id", "INTEGER REFERENCES assignment_groups(id)"),
             ("students", "password_hash", "VARCHAR(255)"),
+            ("students", "enrolled_next_sem", "BOOLEAN DEFAULT FALSE"),
             ("exam_submissions", "question_order", "TEXT"),
             ("exam_submissions", "question_states", "TEXT")
         ]

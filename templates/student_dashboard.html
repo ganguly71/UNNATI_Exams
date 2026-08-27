@@ -22,6 +22,46 @@
         </div>
     </div>
 
+    <!-- Semester Enrollment Card -->
+    <div class="card mb-4 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; background: {% if enrollment_enabled and not student.enrolled_next_sem %}linear-gradient(135deg, rgba(42, 82, 152, 0.05) 0%, rgba(42, 82, 152, 0.1) 100%){% else %}#ffffff{% endif %}; border: 1px solid var(--color-border); {% if enrollment_enabled and not student.enrolled_next_sem %}border-left: 4px solid var(--color-navy-600) !important;{% endif %}">
+        <div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h5 class="fw-bold mb-1 text-dark d-flex align-items-center">
+                    <i class="bi bi-mortarboard-fill me-2 {% if enrollment_enabled and not student.enrolled_next_sem %}text-primary{% else %}text-muted{% endif %}" style="font-size: 1.3rem;"></i>
+                    Semester Enrollment
+                </h5>
+                <p class="mb-0 text-secondary small">
+                    {% if enrollment_enabled %}
+                        {% if student.enrolled_next_sem %}
+                            You have successfully enrolled in Semester {{ student.semester }} for the upcoming term.
+                        {% else %}
+                            Enrollment for the next semester is open! You can now enroll in Semester {{ student.semester + 1 }}.
+                        {% endif %}
+                    {% else %}
+                        Enrollment for the next semester is currently closed by the Admin.
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                {% if enrollment_enabled %}
+                    {% if student.enrolled_next_sem %}
+                        <button class="btn btn-success px-4 py-2" disabled style="height: 44px; border-radius: 8px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-check-circle-fill me-2"></i> Enrolled
+                        </button>
+                    {% else %}
+                        <button id="enrollBtn" class="btn btn-navy-solid px-4 py-2" onclick="enrollNextSemester()" style="height: 44px; border-radius: 8px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-mortarboard-fill me-2"></i> Enroll to Sem {{ student.semester + 1 }}
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <button class="btn btn-secondary px-4 py-2" disabled style="height: 44px; border-radius: 8px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-lock-fill me-2"></i> Enrollment Closed
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Stats Cards (Aggregating Online & Manual) -->
     <div class="row mb-5 g-4">
         <div class="col-md-3 col-sm-6">
@@ -293,5 +333,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+function enrollNextSemester() {
+    if (confirm('Are you sure you want to enroll to the next semester? This will update your current semester in the system.')) {
+        const btn = document.getElementById('enrollBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Enrolling...';
+        
+        fetch('/student/enroll_next_semester', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to enroll');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-mortarboard-fill me-2"></i> Enroll to Sem {{ student.semester + 1 }}';
+            }
+        })
+        .catch(err => {
+            alert('An error occurred');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-mortarboard-fill me-2"></i> Enroll to Sem {{ student.semester + 1 }}';
+        });
+    }
+}
 </script>
 {% endblock %}

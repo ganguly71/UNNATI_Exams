@@ -495,6 +495,16 @@ h3, h4, h5, h6 {
   background-color: var(--color-navy-50) !important;
 }
 
+.btn-navy-solid {
+  background-color: var(--color-navy-800) !important;
+  border: 1px solid var(--color-navy-800) !important;
+  color: #ffffff !important;
+}
+.btn-navy-solid:hover {
+  background-color: var(--color-navy-600) !important;
+  border-color: var(--color-navy-600) !important;
+}
+
 .btn-ember-solid {
   background-color: var(--color-ember) !important;
   border: 1px solid var(--color-ember) !important;

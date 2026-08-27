@@ -6,6 +6,31 @@
         <a href="{{ url_for('main.create_exam') }}" class="btn btn-navy-outline px-4 py-2"><i class="bi bi-plus-lg me-2"></i> Create Exam</a>
     </div>
 
+    {% if current_user.role == 'admin' %}
+    <div class="card mb-4 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, var(--color-navy-950) 0%, var(--color-navy-900) 100%); color: #ffffff;">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h5 class="fw-bold mb-1 d-flex align-items-center">
+                        <i class="bi bi-shield-check me-2 text-warning" style="font-size: 1.5rem;"></i>
+                        System Admin Controls
+                    </h5>
+                    <p class="mb-0 text-white-50 small">Control system features for all students</p>
+                </div>
+                <div class="d-flex align-items-center bg-white-10 px-3 py-2 rounded-3 gap-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <span class="small fw-semibold text-white-75">Semester Enrollment:</span>
+                    <div class="form-check form-switch p-0 m-0 d-flex align-items-center">
+                        <input class="form-check-input ms-0 cursor-pointer" type="checkbox" id="enrollmentToggle" style="width: 2.6rem; height: 1.3rem; margin-top: 0;" {% if enrollment_enabled %}checked{% endif %} onchange="toggleEnrollment(this)">
+                    </div>
+                    <span id="enrollmentBadge" class="badge px-3 py-2 rounded-2 {% if enrollment_enabled %}bg-success{% else %}bg-secondary{% endif %}" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+                        {% if enrollment_enabled %}Open{% else %}Closed{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Stat row at the top -->
     <div class="row mb-5 g-4">
         <div class="col-md-4">
@@ -95,6 +120,37 @@
 
 {% block scripts %}
 <script>
+function toggleEnrollment(checkbox) {
+    const isChecked = checkbox.checked;
+    fetch('/admin/toggle_enrollment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ enabled: isChecked })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) {
+            const badge = document.getElementById('enrollmentBadge');
+            if(data.enabled) {
+                badge.className = 'badge px-3 py-2 rounded-2 bg-success';
+                badge.innerText = 'Open';
+            } else {
+                badge.className = 'badge px-3 py-2 rounded-2 bg-secondary';
+                badge.innerText = 'Closed';
+            }
+        } else {
+            alert(data.error || 'Failed to update setting');
+            checkbox.checked = !isChecked; // Revert
+        }
+    })
+    .catch(err => {
+        alert('An error occurred');
+        checkbox.checked = !isChecked; // Revert
+    });
+}
+
 function toggleStart(examId) {
     fetch(`/faculty/exam/${examId}/start`, {
         method: 'POST',
