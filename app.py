@@ -14,8 +14,11 @@ def create_app():
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'UNNATI'))
         db_path = os.path.join(base_dir, 'instance', 'database.db')
         db_url = 'sqlite:///' + db_path.replace('\\', '/')
-    elif db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    else:
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        # Strip pgbouncer parameter if present as psycopg2 does not support it
+        db_url = db_url.replace("?pgbouncer=true", "").replace("&pgbouncer=true", "")
         
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
