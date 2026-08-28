@@ -4,6 +4,8 @@ from models import db, User, Student, Exam, Question, Option, ExamAllotment, Exa
 from datetime import datetime
 import uuid
 import os
+import json
+import random
 import cloudinary
 import cloudinary.uploader
 
