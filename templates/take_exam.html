@@ -192,6 +192,86 @@
   </div>
 </div>
 
+<!-- Fullscreen Mandatory Entry Modal -->
+<div class="modal fade" id="fullscreenEntryModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="fullscreenEntryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg text-center p-4" style="border: 3px solid var(--color-ember); border-radius: 12px; background: #070F1C; color: #F1F5F9; box-shadow: 6px 6px 0px var(--color-ember) !important;">
+      <div class="mb-3" style="color: var(--color-ember);">
+        <i class="bi bi-arrows-fullscreen" style="font-size: 3.2rem;"></i>
+      </div>
+      <h4 class="fw-bold text-white mb-2">FULLSCREEN MODE REQUIRED</h4>
+      <p class="small text-light mb-3" style="line-height: 1.6; opacity: 0.9;">
+        This is an anti-cheating monitored and proctored examination.<br>
+        You must enter <strong>Fullscreen Mode</strong> to take this exam.
+      </p>
+      <div class="p-3 mb-4 rounded text-start" style="background: rgba(255, 107, 53, 0.1); border-left: 4px solid var(--color-ember);">
+        <ul class="mb-0 small text-white ps-3" style="line-height: 1.8;">
+          <li>Switching tabs, minimizing the window, or <strong>exiting Fullscreen</strong> is recorded as a violation.</li>
+          <li>You are permitted a maximum of <strong>2 warnings</strong>.</li>
+          <li>On the <strong>3rd violation</strong>, your exam will be <strong>automatically terminated and submitted</strong>.</li>
+        </ul>
+      </div>
+      <button type="button" class="btn w-100 fw-bold py-3 fs-6" id="btnEnterFullscreen" style="background: var(--color-ember); color: #ffffff; border: 2px solid var(--color-ember); border-radius: 8px; box-shadow: 4px 4px 0px #7F1D1D;" onclick="requestFullscreenExam()">
+        <i class="bi bi-fullscreen me-2"></i> Enter Fullscreen &amp; Begin Exam
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tab Switch & Fullscreen Warning Modal -->
+<div class="modal fade" id="tabSwitchWarningModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="tabSwitchWarningModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg" style="border: 3px solid #EF4444; border-radius: 12px; background: #070F1C; color: #F1F5F9; box-shadow: 6px 6px 0px #EF4444 !important;">
+      <div class="modal-header py-3" style="background: rgba(239, 68, 68, 0.15); border-bottom: 2px solid rgba(239, 68, 68, 0.3);">
+        <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="tabSwitchWarningModalLabel">
+          <i class="bi bi-exclamation-triangle-fill fs-4"></i> PROCTORING VIOLATION DETECTED
+        </h5>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <div class="mb-3">
+          <span class="badge px-3 py-2 fs-6 fw-bold text-uppercase" id="warningBadgeCount" style="background: #DC2626; color: white; letter-spacing: 0.05em; border-radius: 6px;">
+            Warning 1 of 3
+          </span>
+        </div>
+        <h5 class="fw-bold text-white mb-2" id="warningModalTitle">You navigated away or exited Fullscreen!</h5>
+        <p class="small text-light mb-3" style="line-height: 1.6; opacity: 0.85;">
+          Switching browser tabs, minimizing the browser, losing window focus, or exiting Fullscreen mode is strictly monitored.
+        </p>
+        <div class="p-3 mb-3 rounded text-start" style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #DC2626;">
+          <p class="mb-0 small text-white fw-medium">
+            <strong>Rule:</strong> You are allowed a maximum of <strong>2 warnings</strong>. On the <strong>3rd violation</strong>, your exam will be <strong>automatically terminated and submitted immediately</strong>.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer border-0 p-3" style="background: rgba(10, 22, 40, 0.5);">
+        <button type="button" class="btn w-100 fw-bold py-2" id="btnAcknowledgeWarning" style="background: #EF4444; color: #ffffff; border: 2px solid #EF4444; border-radius: 8px; box-shadow: 3px 3px 0px #7F1D1D;" onclick="dismissWarningModal()">
+          <i class="bi bi-fullscreen me-2"></i> I Understand &amp; Return to Fullscreen Exam
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Disqualification / Auto-submit Modal -->
+<div class="modal fade" id="autoSubmitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg text-center p-4" style="border: 3px solid #DC2626; border-radius: 12px; background: #070F1C; color: #F1F5F9; box-shadow: 6px 6px 0px #DC2626 !important;">
+      <div class="mb-3 text-danger">
+        <i class="bi bi-shield-x" style="font-size: 3.5rem;"></i>
+      </div>
+      <h4 class="fw-bold text-danger mb-2">EXAM TERMINATED</h4>
+      <p class="text-light mb-4">
+        You have exceeded the maximum limit of <strong>3 violations</strong> (tab switches / exiting fullscreen).<br>
+        Your responses have been saved and your exam is being submitted automatically.
+      </p>
+      <div class="spinner-border text-danger mx-auto mb-2" role="status">
+        <span class="visually-hidden">Submitting...</span>
+      </div>
+      <p class="small text-secondary mb-0">Redirecting to student dashboard...</p>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Save Indicators -->
 <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1080;">
   <div id="saveToast" class="toast align-items-center text-bg-dark border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 8px; background-color: var(--color-navy-900) !important;">
@@ -247,7 +327,7 @@
                 timerPill.style.setProperty('--timer-progress', '0%');
                 timerPill.classList.add('timer-warning');
             }
-            confirmSubmit();
+            confirmSubmit("Auto-submitted: Time limit expired");
             return;
         }
         const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -522,8 +602,159 @@
         confirmModal.show();
     }
     
-    // final submit execution after auto-saving current question
-    function confirmSubmit() {
+    // Anti-Cheating & Proctoring System (Tab-Switch, Fullscreen & Anti-Copy)
+    let violationCount = 0;
+    const MAX_VIOLATIONS = 3;
+    let lastViolationTime = 0;
+    let isExamSubmitted = false;
+    let isFullscreenActive = false;
+    let warningModalInstance = null;
+
+    // Decoy Anti-Copy: If student attempts to copy anything, malpractice warning is copied instead
+    document.addEventListener('copy', (e) => {
+        if (e.clipboardData) {
+            e.clipboardData.setData('text/plain', "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE");
+            e.preventDefault();
+        } else if (window.clipboardData) {
+            window.clipboardData.setData('Text', "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE");
+            e.preventDefault();
+        }
+    });
+    document.addEventListener('cut', (e) => {
+        if (e.clipboardData) {
+            e.clipboardData.setData('text/plain', "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE");
+            e.preventDefault();
+        } else if (window.clipboardData) {
+            window.clipboardData.setData('Text', "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE");
+            e.preventDefault();
+        }
+    });
+
+    // Request browser fullscreen mode
+    function requestFullscreenExam() {
+        const docEl = document.documentElement;
+        const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+        
+        const closeEntryModal = () => {
+            const entryModalEl = document.getElementById('fullscreenEntryModal');
+            if (entryModalEl) {
+                const modal = bootstrap.Modal.getInstance(entryModalEl);
+                if (modal) modal.hide();
+            }
+            isFullscreenActive = true;
+        };
+
+        if (req) {
+            req.call(docEl).then(() => {
+                closeEntryModal();
+            }).catch(err => {
+                console.warn("Fullscreen request error:", err);
+                closeEntryModal();
+            });
+        } else {
+            closeEntryModal();
+        }
+    }
+
+    // Generic proctoring violation handler (Debounced)
+    function handleProctoringViolation(reason = "Navigated away from exam tab") {
+        if (isExamSubmitted) return;
+        const now = Date.now();
+        // Debounce by 1500ms to avoid dual triggers from simultaneous blur/fullscreen/visibility events
+        if (now - lastViolationTime < 1500) return;
+        lastViolationTime = now;
+
+        violationCount++;
+
+        if (violationCount >= MAX_VIOLATIONS) {
+            triggerAutoSubmitOnViolation(reason);
+        } else {
+            showProctoringWarning(violationCount, reason);
+        }
+    }
+
+    function showProctoringWarning(count, reason) {
+        const badge = document.getElementById('warningBadgeCount');
+        if (badge) {
+            badge.innerText = `Warning ${count} of ${MAX_VIOLATIONS}`;
+        }
+        const titleEl = document.getElementById('warningModalTitle');
+        if (titleEl) {
+            titleEl.innerText = reason ? `Violation: ${reason}` : "You navigated away or exited Fullscreen!";
+        }
+        const modalEl = document.getElementById('tabSwitchWarningModal');
+        if (modalEl) {
+            if (!warningModalInstance) {
+                warningModalInstance = new bootstrap.Modal(modalEl);
+            }
+            warningModalInstance.show();
+        }
+    }
+
+    function dismissWarningModal() {
+        const modalEl = document.getElementById('tabSwitchWarningModal');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }
+        // Force re-entering fullscreen upon dismissing warning
+        const docEl = document.documentElement;
+        const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+        const isCurrentlyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        if (req && !isCurrentlyFull) {
+            req.call(docEl).catch(() => {});
+        }
+        isFullscreenActive = true;
+    }
+
+    function triggerAutoSubmitOnViolation(reason) {
+        if (isExamSubmitted) return;
+        isExamSubmitted = true;
+
+        // Dismiss any existing warning modal
+        dismissWarningModal();
+
+        // Show auto-submit notification modal
+        const autoModalEl = document.getElementById('autoSubmitModal');
+        if (autoModalEl) {
+            const autoModal = new bootstrap.Modal(autoModalEl);
+            autoModal.show();
+        }
+
+        // Auto-submit exam with violation reason
+        confirmSubmit(`Auto-submitted: Exceeded maximum allowed violations (3) - ${reason}`);
+    }
+
+    // Proctoring Listeners: Tab Switching & Window Blur
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            handleProctoringViolation("Tab switched or minimized");
+        }
+    });
+
+    window.addEventListener('blur', () => {
+        handleProctoringViolation("Window lost focus");
+    });
+
+    // Proctoring Listener: Fullscreen Exit Detection
+    const handleFullscreenExit = () => {
+        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        if (isFullscreenActive && !isFull && !isExamSubmitted) {
+            handleProctoringViolation("Exited Fullscreen mode");
+        }
+        isFullscreenActive = isFull;
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenExit);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenExit);
+    document.addEventListener('mozfullscreenchange', handleFullscreenExit);
+    document.addEventListener('MSFullscreenChange', handleFullscreenExit);
+
+    // Final submit execution after auto-saving current question
+    function confirmSubmit(disqualifiedReason = null) {
+        if (isExamSubmitted && !disqualifiedReason) return;
+        isExamSubmitted = true;
+
         const currentQId = questions[currentQuestionIndex].id;
         const checkedBoxes = document.querySelectorAll(`.answer-checkbox[name="${currentQId}"]:checked`);
         const optionIds = Array.from(checkedBoxes).map(cb => cb.value);
@@ -543,16 +774,21 @@
             return fetch(`/student/exam/${examId}/submit`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({})
+                body: JSON.stringify({
+                    tab_switches: violationCount,
+                    disqualified_reason: disqualifiedReason
+                })
             });
         })
         .then(r => r.json())
         .then(res => {
             if (res.success) {
-                // Hide modal and redirect
+                // Hide modals and redirect
                 const modalEl = document.getElementById('submitConfirmModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
                 window.location.href = res.redirect;
             } else {
                 alert(res.error || 'Failed to submit exam');
@@ -565,6 +801,18 @@
     
     // Page load initialization
     document.addEventListener('DOMContentLoaded', () => {
+        // Prompt mandatory fullscreen entry modal if not already in fullscreen
+        const isAlreadyFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        if (!isAlreadyFull) {
+            const entryModalEl = document.getElementById('fullscreenEntryModal');
+            if (entryModalEl) {
+                const entryModal = new bootstrap.Modal(entryModalEl);
+                entryModal.show();
+            }
+        } else {
+            isFullscreenActive = true;
+        }
+
         // Highlight pre-selected option containers
         document.querySelectorAll('.answer-checkbox').forEach(cb => {
             const optId = cb.value;

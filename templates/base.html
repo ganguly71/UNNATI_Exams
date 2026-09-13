@@ -203,6 +203,28 @@
                 }, 4000);
             });
         });
+
+        // Anti-Copy Decoy for Students: Replace clipboard text with "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE"
+        {% if current_user.is_authenticated and not current_user.email %}
+        document.addEventListener('copy', (e) => {
+            if (e.clipboardData) {
+                e.clipboardData.setData('text/plain', "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE");
+                e.preventDefault();
+            } else if (window.clipboardData) {
+                window.clipboardData.setData('Text', "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE");
+                e.preventDefault();
+            }
+        });
+        document.addEventListener('cut', (e) => {
+            if (e.clipboardData) {
+                e.clipboardData.setData('text/plain', "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE");
+                e.preventDefault();
+            } else if (window.clipboardData) {
+                window.clipboardData.setData('Text', "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE");
+                e.preventDefault();
+            }
+        });
+        {% endif %}
     </script>
     {% block scripts %}{% endblock %}
 </body>

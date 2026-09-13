@@ -633,6 +633,9 @@ def submit_exam(exam_id):
     submission.score = total_score
     submission.status = 'completed'
     submission.completed_at = get_ist_now()
+    submission.tab_switches = int(data.get('tab_switches', 0))
+    if data.get('disqualified_reason'):
+        submission.disqualified_reason = str(data.get('disqualified_reason'))
     db.session.commit()
     
     return jsonify({'success': True, 'redirect': url_for('main.student_dashboard')})

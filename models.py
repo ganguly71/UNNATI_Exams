@@ -165,6 +165,8 @@ class ExamSubmission(db.Model):
     completed_at = db.Column(db.DateTime, nullable=True)
     question_order = db.Column(db.Text, nullable=True)
     question_states = db.Column(db.Text, nullable=True)
+    tab_switches = db.Column(db.Integer, default=0)
+    disqualified_reason = db.Column(db.String(255), nullable=True)
     
     student = db.relationship('Student', backref='exam_submissions')
 

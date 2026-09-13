@@ -86,6 +86,7 @@
                             </th>
                             <th>Duration</th>
                             <th>Completed At</th>
+                            <th>Proctoring / Tab Switches</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -127,10 +128,27 @@
                                 <span class="text-muted">-</span>
                                 {% endif %}
                             </td>
+                            <td>
+                                {% if sub.disqualified_reason %}
+                                <span class="badge bg-danger text-white border-0 px-2 py-1" title="{{ sub.disqualified_reason }}">
+                                    <i class="bi bi-shield-x me-1"></i> Auto-Submitted ({{ sub.tab_switches or 3 }} switches)
+                                </span>
+                                {% elif sub.tab_switches and sub.tab_switches > 0 %}
+                                <span class="badge bg-warning text-dark border-0 px-2 py-1">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ sub.tab_switches }} switch{{ 'es' if sub.tab_switches > 1 else '' }}
+                                </span>
+                                {% elif sub.status == 'completed' %}
+                                <span class="badge bg-success text-white border-0 px-2 py-1">
+                                    <i class="bi bi-shield-check me-1"></i> Clean (0 switches)
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">No students allotted to this exam.</td>
+                            <td colspan="8" class="text-center text-muted py-4">No students allotted to this exam.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
