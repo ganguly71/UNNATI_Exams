@@ -204,6 +204,24 @@
             });
         });
 
+        // Ensure all Bootstrap modals are attached directly to document.body
+        // This prevents stacking context traps where modal-backdrop covers the modal
+        function fixModalStacking() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                if (modal.parentElement !== document.body) {
+                    document.body.appendChild(modal);
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', fixModalStacking);
+        document.addEventListener('show.bs.modal', function(e) {
+            if (e.target && e.target.classList && e.target.classList.contains('modal')) {
+                if (e.target.parentElement !== document.body) {
+                    document.body.appendChild(e.target);
+                }
+            }
+        });
+
         // Anti-Copy Decoy for Students: Replace clipboard text with "IT IS COPIED FROM THE UNNATI EXAM PORTAL, & CONSIDERED AS A MALPRACTICE"
         {% if current_user.is_authenticated and not current_user.email %}
         document.addEventListener('copy', (e) => {

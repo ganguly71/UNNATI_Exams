@@ -202,63 +202,81 @@
     });
 
     // Draw Formal Technical Grid
+    // Draw Formal Technical Grid
     function drawGrid() {
         ctx.save();
 
-        // 1. Subtle horizontal and vertical background grid lines
         const cols = Math.ceil(width / GRID_SPACING) + 1;
         const rows = Math.ceil(height / GRID_SPACING) + 1;
 
-        // Vertical lines
+        // 1. Subtle horizontal and vertical background grid lines (Batched)
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
+        ctx.lineWidth = 0.6;
         for (let c = 0; c <= cols; c++) {
             const gx = c * GRID_SPACING;
             const distToMouse = pointer.active ? Math.abs(gx - pointer.x) : 9999;
-            const proximity = pointer.active && distToMouse < pointer.radius
-                ? (1 - distToMouse / pointer.radius) * 0.18
-                : 0;
-
-            ctx.beginPath();
-            ctx.moveTo(gx, 0);
-            ctx.lineTo(gx, height);
-            ctx.strokeStyle = proximity > 0
-                ? `rgba(255, 107, 53, ${0.04 + proximity})`
-                : 'rgba(255, 255, 255, 0.035)';
-            ctx.lineWidth = proximity > 0 ? 1.0 : 0.6;
-            ctx.stroke();
+            if (distToMouse >= pointer.radius) {
+                ctx.moveTo(gx, 0);
+                ctx.lineTo(gx, height);
+            }
         }
-
-        // Horizontal lines
         for (let r = 0; r <= rows; r++) {
             const gy = r * GRID_SPACING;
             const distToMouse = pointer.active ? Math.abs(gy - pointer.y) : 9999;
-            const proximity = pointer.active && distToMouse < pointer.radius
-                ? (1 - distToMouse / pointer.radius) * 0.18
-                : 0;
+            if (distToMouse >= pointer.radius) {
+                ctx.moveTo(0, gy);
+                ctx.lineTo(width, gy);
+            }
+        }
+        ctx.stroke();
 
-            ctx.beginPath();
-            ctx.moveTo(0, gy);
-            ctx.lineTo(width, gy);
-            ctx.strokeStyle = proximity > 0
-                ? `rgba(255, 107, 53, ${0.04 + proximity})`
-                : 'rgba(255, 255, 255, 0.035)';
-            ctx.lineWidth = proximity > 0 ? 1.0 : 0.6;
-            ctx.stroke();
+        // Cursor proximity reactive lines
+        if (pointer.active) {
+            for (let c = 0; c <= cols; c++) {
+                const gx = c * GRID_SPACING;
+                const distToMouse = Math.abs(gx - pointer.x);
+                if (distToMouse < pointer.radius) {
+                    const proximity = (1 - distToMouse / pointer.radius) * 0.18;
+                    ctx.beginPath();
+                    ctx.moveTo(gx, 0);
+                    ctx.lineTo(gx, height);
+                    ctx.strokeStyle = `rgba(255, 107, 53, ${0.04 + proximity})`;
+                    ctx.lineWidth = 1.0;
+                    ctx.stroke();
+                }
+            }
+            for (let r = 0; r <= rows; r++) {
+                const gy = r * GRID_SPACING;
+                const distToMouse = Math.abs(gy - pointer.y);
+                if (distToMouse < pointer.radius) {
+                    const proximity = (1 - distToMouse / pointer.radius) * 0.18;
+                    ctx.beginPath();
+                    ctx.moveTo(0, gy);
+                    ctx.lineTo(width, gy);
+                    ctx.strokeStyle = `rgba(255, 107, 53, ${0.04 + proximity})`;
+                    ctx.lineWidth = 1.0;
+                    ctx.stroke();
+                }
+            }
         }
 
-        // 2. Grid Intersection Crosshairs (+) with Interactive Lens Glow
+        // 2. Grid Intersection Crosshairs (+) with Interactive Lens Glow (Batched)
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.lineWidth = 0.8;
+        const glowingPts = [];
+
         for (let i = 0; i < gridPoints.length; i++) {
             const pt = gridPoints[i];
 
-            let dist = 9999;
-            let force = 0;
             if (pointer.active) {
                 const dx = pt.baseX - pointer.x;
                 const dy = pt.baseY - pointer.y;
-                dist = Math.sqrt(dx * dx + dy * dy);
+                const dist = Math.sqrt(dx * dx + dy * dy);
 
                 if (dist < pointer.radius && dist > 1) {
-                    force = 1 - dist / pointer.radius;
-                    // Subtle geometric repulsion
+                    const force = 1 - dist / pointer.radius;
                     pt.x = pt.baseX + (dx / dist) * force * 10;
                     pt.y = pt.baseY + (dy / dist) * force * 10;
                     pt.glow = Math.min(1, pt.glow + force * 0.4);
@@ -273,21 +291,30 @@
 
             pt.glow *= 0.92;
 
-            // Draw precision crosshair (+)
+            if (pt.glow > 0.05) {
+                glowingPts.push(pt);
+            } else {
+                const crossSize = 3.5;
+                ctx.moveTo(pt.x - crossSize, pt.y);
+                ctx.lineTo(pt.x + crossSize, pt.y);
+                ctx.moveTo(pt.x, pt.y - crossSize);
+                ctx.lineTo(pt.x, pt.y + crossSize);
+            }
+        }
+        ctx.stroke();
+
+        // Draw only glowing crosshairs individually
+        for (let i = 0; i < glowingPts.length; i++) {
+            const pt = glowingPts[i];
             const crossSize = 3.5 + pt.glow * 3.0;
             const alpha = 0.12 + pt.glow * 0.65;
-            const isGlow = pt.glow > 0.05;
-
             ctx.beginPath();
             ctx.moveTo(pt.x - crossSize, pt.y);
             ctx.lineTo(pt.x + crossSize, pt.y);
             ctx.moveTo(pt.x, pt.y - crossSize);
             ctx.lineTo(pt.x, pt.y + crossSize);
-
-            ctx.strokeStyle = isGlow
-                ? `rgba(255, 107, 53, ${alpha})`
-                : `rgba(255, 255, 255, ${alpha})`;
-            ctx.lineWidth = isGlow ? 1.2 : 0.8;
+            ctx.strokeStyle = `rgba(255, 107, 53, ${alpha})`;
+            ctx.lineWidth = 1.2;
             ctx.stroke();
         }
 
@@ -526,6 +553,12 @@
 
     // Main 60 FPS Render Loop
     function animate() {
+        // Pause heavy canvas redraws when a modal is open to keep inputs and modals responsive
+        if (document.body.classList.contains('modal-open')) {
+            animId = requestAnimationFrame(animate);
+            return;
+        }
+
         time += 1;
 
         // Smooth cursor interpolation

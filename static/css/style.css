@@ -2001,6 +2001,14 @@ strong.text-dark, span.text-dark, p.text-dark, td.text-dark, th.text-dark, label
   color: #FFFFFF;
 }
 
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+
+.modal {
+  z-index: 1055 !important;
+}
+
 .modal-content {
   background-color: #0F1F38 !important;
   color: #F1F5F9 !important;
