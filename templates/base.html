@@ -4,87 +4,195 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNNATI - Exams</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="bg-light {% if request.endpoint == 'main.index' %}login-page-body{% endif %}">
-    <!-- Floating Toast-style Flash Alerts -->
-    <div class="flash-toast-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="flash-toast flash-toast-{{ category }}" role="alert">
-                  <div class="flash-toast-content d-flex align-items-center">
-                      {% if category == 'success' %}
-                      <i class="bi bi-check-circle-fill me-2" style="color: var(--color-ember);"></i>
-                      {% elif category == 'danger' %}
-                      <i class="bi bi-exclamation-triangle-fill me-2" style="color: var(--color-red);"></i>
-                      {% else %}
-                      <i class="bi bi-info-circle-fill me-2" style="color: var(--color-gold);"></i>
-                      {% endif %}
-                      {{ message }}
-                  </div>
-                  <button type="button" class="btn-close btn-close-sm ms-3" onclick="this.parentElement.remove()" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-    </div>
+<body class="slate-theme">
+    <!-- Site-Wide Persistent Formal Vector SVG Live Wallpaper Universe -->
+    <div class="portal-universe">
+        <!-- 1. Technical Coordinate Grid & Datum SVG Wallpaper -->
+        <div class="formal-svg-wallpaper" aria-hidden="true">
+            <!-- Technical Coordinate Grid SVG -->
+            <svg class="formal-svg-grid" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <!-- Minor Sub-Grid (24px) with micro-nodes -->
+                    <pattern id="formal-subgrid" width="24" height="24" patternUnits="userSpaceOnUse">
+                        <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(255, 255, 255, 0.02)" stroke-width="0.5" />
+                        <circle cx="12" cy="12" r="0.6" fill="rgba(255, 107, 53, 0.08)" />
+                    </pattern>
+                    <!-- Major Engineering Grid (120px) with Crosshairs -->
+                    <pattern id="formal-majargrid" width="120" height="120" patternUnits="userSpaceOnUse">
+                        <rect width="120" height="120" fill="url(#formal-subgrid)" />
+                        <path d="M 120 0 L 0 0 0 120" fill="none" stroke="rgba(255, 107, 53, 0.08)" stroke-width="0.8" />
+                        <!-- Precision Crosshair Node (+) -->
+                        <path d="M -4 0 L 4 0 M 0 -4 L 0 4" stroke="rgba(255, 107, 53, 0.3)" stroke-width="1" />
+                        <!-- Sub-calibration Ticks -->
+                        <path d="M 60 -2.5 L 60 2.5 M -2.5 60 L 2.5 60" stroke="rgba(148, 163, 184, 0.15)" stroke-width="0.7" />
+                    </pattern>
 
-    <!-- Navigation Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark custom-navbar py-2">
-      <div class="container">
-        <a class="navbar-brand-custom" href="{{ url_for('main.index') }}">
-          <span class="brand-gradient">UNNATI</span>
-          <span class="brand-sub">Examsㅤ</span>
-        </a>
-        
-        {% if current_user.is_authenticated %}
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-             {% if current_user.email %}
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'main.faculty_dashboard' %}active{% endif %}" href="{{ url_for('main.faculty_dashboard') }}">
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'main.faculty_students' %}active{% endif %}" href="{{ url_for('main.faculty_students') }}">
-                        Students
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'main.faculty_exams' %}active{% endif %}" href="{{ url_for('main.faculty_exams') }}">
-                        Assignments / Exams
-                    </a>
-                </li>
-             {% else %}
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'main.student_dashboard' %}active{% endif %}" href="{{ url_for('main.student_dashboard') }}">My Dashboard</a>
-                </li>
-             {% endif %}
-          </ul>
-          <ul class="navbar-nav ms-auto">
-              <li class="nav-item">
-                  <a class="logout-btn nav-link" href="{{ url_for('main.logout') }}">Logout</a>
-              </li>
-          </ul>
+                    <!-- Gradients for Flowing Harmonic Wave Ribbons -->
+                    <linearGradient id="svgWaveGradOrange" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#FF6B35" stop-opacity="0.45" />
+                        <stop offset="40%" stop-color="#F7931E" stop-opacity="0.30" />
+                        <stop offset="80%" stop-color="#FF8A50" stop-opacity="0.40" />
+                        <stop offset="100%" stop-color="#FF6B35" stop-opacity="0.45" />
+                    </linearGradient>
+                    <linearGradient id="svgWaveGradNavy" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#1D4ED8" stop-opacity="0.38" />
+                        <stop offset="50%" stop-color="#3B82F6" stop-opacity="0.22" />
+                        <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.38" />
+                    </linearGradient>
+                    <linearGradient id="svgWaveFillNavy" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#1E3A8A" stop-opacity="0.10" />
+                        <stop offset="100%" stop-color="#070F1C" stop-opacity="0.0" />
+                    </linearGradient>
+                    <linearGradient id="svgWaveFillOrange" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#FF6B35" stop-opacity="0.07" />
+                        <stop offset="100%" stop-color="#070F1C" stop-opacity="0.0" />
+                    </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#formal-majargrid)" />
+            </svg>
+
+            <!-- Dual Calibrated Engineering Azimuth Reticles -->
+            <div class="formal-reticle-container reticle-top-right">
+                <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="150" r="140" stroke="rgba(255, 107, 53, 0.16)" stroke-width="1" stroke-dasharray="3 6" />
+                    <circle cx="150" cy="150" r="118" stroke="rgba(59, 130, 246, 0.22)" stroke-width="1.2" />
+                    <circle cx="150" cy="150" r="88" stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.8" stroke-dasharray="10 10" />
+                    <circle cx="150" cy="150" r="38" stroke="rgba(255, 107, 53, 0.28)" stroke-width="1" />
+                    <circle cx="150" cy="150" r="3.5" fill="rgba(255, 107, 53, 0.7)" />
+                    <line x1="150" y1="0" x2="150" y2="300" stroke="rgba(255, 107, 53, 0.14)" stroke-width="1" stroke-dasharray="4 4" />
+                    <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(255, 107, 53, 0.14)" stroke-width="1" stroke-dasharray="4 4" />
+                    <line x1="150" y1="8" x2="150" y2="22" stroke="rgba(255, 107, 53, 0.45)" stroke-width="1.6" />
+                    <line x1="150" y1="278" x2="150" y2="292" stroke="rgba(255, 107, 53, 0.45)" stroke-width="1.6" />
+                    <line x1="8" y1="150" x2="22" y2="150" stroke="rgba(255, 107, 53, 0.45)" stroke-width="1.6" />
+                    <line x1="278" y1="150" x2="292" y2="150" stroke="rgba(255, 107, 53, 0.45)" stroke-width="1.6" />
+                </svg>
+            </div>
+
+            <div class="formal-reticle-container reticle-bottom-left">
+                <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="120" cy="120" r="110" stroke="rgba(59, 130, 246, 0.18)" stroke-width="1" stroke-dasharray="4 8" />
+                    <circle cx="120" cy="120" r="80" stroke="rgba(255, 107, 53, 0.2)" stroke-width="1" />
+                    <circle cx="120" cy="120" r="30" stroke="rgba(148, 163, 184, 0.15)" stroke-width="0.8" />
+                    <circle cx="120" cy="120" r="3" fill="rgba(59, 130, 246, 0.6)" />
+                    <line x1="120" y1="10" x2="120" y2="230" stroke="rgba(59, 130, 246, 0.15)" stroke-width="1" stroke-dasharray="3 3" />
+                    <line x1="10" y1="120" x2="230" y2="120" stroke="rgba(59, 130, 246, 0.15)" stroke-width="1" stroke-dasharray="3 3" />
+                </svg>
+            </div>
+
+            <!-- Continuous Flowing Harmonic SVG Waves -->
+            <div class="formal-svg-waves-layer">
+                <svg class="formal-svg-wave-band wave-band-back" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                    <path fill="url(#svgWaveFillNavy)" stroke="url(#svgWaveGradNavy)" stroke-width="1.8"
+                        d="M0,192L48,181.3C96,171,192,149,288,160C384,171,480,213,576,218.7C672,224,768,192,864,170.7C960,149,1056,139,1152,149.3C1248,160,1344,192,1392,208L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+                    </path>
+                </svg>
+                <svg class="formal-svg-wave-band wave-band-mid" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                    <path fill="url(#svgWaveFillOrange)" stroke="url(#svgWaveGradOrange)" stroke-width="1.6"
+                        d="M0,224L48,208C96,192,192,160,288,165.3C384,171,480,213,576,229.3C672,245,768,235,864,213.3C960,192,1056,160,1152,165.3C1248,171,1344,213,1392,234.7L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+                    </path>
+                </svg>
+                <svg class="formal-svg-wave-band wave-band-fine" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                    <path fill="none" stroke="rgba(255, 107, 53, 0.35)" stroke-width="1.2" stroke-dasharray="6 4"
+                        d="M0,256L60,240C120,224,240,192,360,197.3C480,203,600,245,720,250.7C840,256,960,224,1080,208C1200,192,1320,192,1380,192L1440,192">
+                    </path>
+                </svg>
+            </div>
+
         </div>
-        {% endif %}
-      </div>
-    </nav>
 
-    <!-- Main Content Block -->
-    <div class="main-layout">
-        {% block content %}{% endblock %}
+        <!-- 2. Dynamic 60fps Interactive Live Wallpaper Canvas -->
+        <canvas id="interactive-wallpaper-canvas" class="interactive-wallpaper-canvas"></canvas>
+
+        <!-- 3. Ambient Illumination Orbs -->
+        <div class="ambient-orb orb-orange-top"></div>
+        <div class="ambient-orb orb-navy-bottom"></div>
+        <div class="ambient-orb orb-orange-right"></div>
+
+        <!-- Floating Toast-style Flash Alerts -->
+        <div class="flash-toast-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="flash-toast flash-toast-{{ category }}" role="alert">
+                      <div class="flash-toast-content d-flex align-items-center">
+                          {% if category == 'success' %}
+                          <i class="bi bi-check-circle-fill me-2" style="color: var(--color-ember);"></i>
+                          {% elif category == 'danger' %}
+                          <i class="bi bi-exclamation-triangle-fill me-2" style="color: var(--color-red);"></i>
+                          {% else %}
+                          <i class="bi bi-info-circle-fill me-2" style="color: var(--color-gold);"></i>
+                          {% endif %}
+                          {{ message }}
+                      </div>
+                      <button type="button" class="btn-close btn-close-sm ms-3" onclick="this.parentElement.remove()" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Site Navigation Header -->
+        <nav class="navbar navbar-expand-lg navbar-dark custom-navbar py-2">
+          <div class="container">
+            <a class="navbar-brand-custom" href="{{ url_for('main.index') }}">
+              <span class="brand-gradient">UNNATI</span>
+              <span class="brand-sub">Examsㅤ</span>
+            </a>
+            
+            {% if current_user.is_authenticated %}
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav me-auto">
+                 {% if current_user.email %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.faculty_dashboard' %}active{% endif %}" href="{{ url_for('main.faculty_dashboard') }}">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.faculty_students' %}active{% endif %}" href="{{ url_for('main.faculty_students') }}">
+                            Students
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.faculty_exams' %}active{% endif %}" href="{{ url_for('main.faculty_exams') }}">
+                            Assignments / Exams
+                        </a>
+                    </li>
+                 {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.student_dashboard' %}active{% endif %}" href="{{ url_for('main.student_dashboard') }}">My Dashboard</a>
+                    </li>
+                 {% endif %}
+              </ul>
+              <ul class="navbar-nav ms-auto">
+                  <li class="nav-item">
+                      <a class="logout-btn nav-link" href="{{ url_for('main.logout') }}">Logout</a>
+                  </li>
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </nav>
+
+        <!-- Main Layout Block for Page Content -->
+        <div class="main-layout">
+            {% block content %}{% endblock %}
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/live_wallpaper.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const toasts = document.querySelectorAll('.flash-toast');

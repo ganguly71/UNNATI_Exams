@@ -40,25 +40,105 @@ def login_faculty():
 
 @main.route('/login/student', methods=['POST'])
 def login_student():
-    roll_no = request.form.get('roll_no')
-    password = request.form.get('password')
+    roll_no = (request.form.get('roll_no') or '').strip()
+    password = request.form.get('password') or ''
 
     student = Student.query.filter_by(roll_no=roll_no).first()
     if student:
         if not student.password_hash:
-            student.set_password(password)
-            db.session.commit()
-            login_user(student)
-            return redirect(url_for('main.student_dashboard'))
+            flash(f"Roll Number '{roll_no}' ({student.name}) has not set a password yet. Please set your password below to activate your account.", 'warning')
+            return redirect(url_for('main.index', setup_roll=roll_no))
         elif student.check_password(password):
             login_user(student)
             return redirect(url_for('main.student_dashboard'))
         else:
             flash('Incorrect password.', 'danger')
     else:
-        flash('Roll No not found in system. Please ask faculty to add you in UNNATI first.', 'danger')
+        flash(f"Roll Number '{roll_no}' is not registered in the system. Please ask faculty to add you in UNNATI first.", 'danger')
         
     return redirect(url_for('main.index'))
+
+@main.route('/api/student/check-status', methods=['POST'])
+def check_student_status():
+    data = request.get_json(silent=True) or request.form
+    roll_no = (data.get('roll_no') or '').strip()
+    
+    if not roll_no:
+        return jsonify({'success': False, 'message': 'Roll Number is required.'}), 400
+        
+    student = Student.query.filter_by(roll_no=roll_no).first()
+    if not student:
+        return jsonify({
+            'success': True,
+            'registered': False,
+            'message': f"Roll Number '{roll_no}' is not registered in the system. Please ask faculty to add you in UNNATI first."
+        })
+        
+    has_password = bool(student.password_hash)
+    return jsonify({
+        'success': True,
+        'registered': True,
+        'has_password': has_password,
+        'name': student.name,
+        'roll_no': student.roll_no,
+        'department': student.department,
+        'semester': student.semester
+    })
+
+@main.route('/student/set-password', methods=['POST'])
+def student_set_password():
+    is_json = request.is_json
+    data = request.get_json(silent=True) if is_json else request.form
+    
+    roll_no = (data.get('roll_no') or '').strip()
+    password = (data.get('password') or '').strip()
+    confirm_password = (data.get('confirm_password') or '').strip()
+    
+    if not roll_no:
+        msg = "Roll number is required."
+        if is_json:
+            return jsonify({'success': False, 'message': msg}), 400
+        flash(msg, 'danger')
+        return redirect(url_for('main.index'))
+        
+    student = Student.query.filter_by(roll_no=roll_no).first()
+    if not student:
+        msg = f"Roll Number '{roll_no}' is not registered in the system. Please ask faculty to add you in UNNATI first."
+        if is_json:
+            return jsonify({'success': False, 'registered': False, 'message': msg})
+        flash(msg, 'danger')
+        return redirect(url_for('main.index'))
+        
+    if student.password_hash:
+        msg = f"Password has already been established for Roll Number '{roll_no}'. Please log in using your password."
+        if is_json:
+            return jsonify({'success': False, 'already_set': True, 'message': msg})
+        flash(msg, 'warning')
+        return redirect(url_for('main.index'))
+        
+    if len(password) < 4:
+        msg = "Password must be at least 4 characters in length."
+        if is_json:
+            return jsonify({'success': False, 'message': msg}), 400
+        flash(msg, 'danger')
+        return redirect(url_for('main.index', setup_roll=roll_no))
+        
+    if password != confirm_password:
+        msg = "Passwords do not match. Please verify and try again."
+        if is_json:
+            return jsonify({'success': False, 'message': msg}), 400
+        flash(msg, 'danger')
+        return redirect(url_for('main.index', setup_roll=roll_no))
+        
+    student.set_password(password)
+    db.session.commit()
+    login_user(student)
+    
+    flash(f"Welcome to UNNATI, {student.name}! Your confidential password has been set successfully.", 'success')
+    if is_json:
+        return jsonify({'success': True, 'redirect_url': url_for('main.student_dashboard')})
+    return redirect(url_for('main.student_dashboard'))
+
 
 @main.route('/logout')
 @login_required

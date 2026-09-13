@@ -60,9 +60,9 @@
     </div>
 
     <!-- Score Distribution Chart -->
-    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: #ffffff;">
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: var(--color-card);">
         <div class="card-body p-4">
-            <h5 class="card-title fw-bold text-dark mb-4"><i class="bi bi-bar-chart-fill me-2" style="color: var(--color-navy-600);"></i> Score Distribution</h5>
+            <h5 class="card-title fw-bold text-dark mb-4"><i class="bi bi-bar-chart-fill me-2" style="color: var(--color-ember);"></i> Score Distribution</h5>
             <div style="height: 280px; position: relative;">
                 <canvas id="scoreDistChart"></canvas>
             </div>
@@ -185,23 +185,23 @@
                         beginAtZero: true,
                         ticks: {
                             precision: 0,
-                            color: '#64748B',
+                            color: '#94A3B8',
                             font: { family: 'Inter' }
                         },
                         grid: {
-                            color: '#E2E8F0',
+                            color: 'rgba(255, 255, 255, 0.08)',
                             drawBorder: false
                         },
                         title: {
                             display: true,
                             text: 'Number of Students',
-                            color: '#64748B',
+                            color: '#CBD5E1',
                             font: { family: 'Inter', weight: 500 }
                         }
                     },
                     x: {
                         ticks: {
-                            color: '#64748B',
+                            color: '#94A3B8',
                             font: { family: 'Inter' }
                         },
                         grid: {
@@ -210,7 +210,7 @@
                         title: {
                             display: true,
                             text: 'Score Band (%)',
-                            color: '#64748B',
+                            color: '#CBD5E1',
                             font: { family: 'Inter', weight: 500 }
                         }
                     }
@@ -220,7 +220,9 @@
                         display: false
                     },
                     tooltip: {
-                        backgroundColor: '#1E293B',
+                        backgroundColor: '#0F1F38',
+                        borderColor: 'rgba(255, 107, 53, 0.4)',
+                        borderWidth: 1,
                         titleFont: { family: 'Inter' },
                         bodyFont: { family: 'Inter' }
                     }

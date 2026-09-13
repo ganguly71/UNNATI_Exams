@@ -23,7 +23,7 @@
     </div>
 
     <!-- Semester Enrollment Card -->
-    <div class="card mb-4 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; background: {% if enrollment_enabled and not student.enrolled_next_sem and days_left == 0 %}linear-gradient(135deg, rgba(42, 82, 152, 0.05) 0%, rgba(42, 82, 152, 0.1) 100%){% else %}#ffffff{% endif %}; border: 1px solid var(--color-border); {% if enrollment_enabled and not student.enrolled_next_sem and days_left == 0 %}border-left: 4px solid var(--color-navy-600) !important;{% endif %}">
+    <div class="card mb-4 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; background: {% if enrollment_enabled and not student.enrolled_next_sem and days_left == 0 %}linear-gradient(135deg, rgba(42, 82, 152, 0.15) 0%, rgba(42, 82, 152, 0.25) 100%){% else %}var(--color-card){% endif %}; border: 1px solid var(--color-border); {% if enrollment_enabled and not student.enrolled_next_sem and days_left == 0 %}border-left: 4px solid var(--color-navy-600) !important;{% endif %}">
         <div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
                 <h5 class="fw-bold mb-1 text-dark d-flex align-items-center">
@@ -263,23 +263,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         beginAtZero: true, 
                         max: 100, 
                         ticks: {
-                            color: '#64748B',
+                            color: '#94A3B8',
                             font: { family: 'Inter' }
                         },
                         grid: {
-                            color: '#E2E8F0',
+                            color: 'rgba(255, 255, 255, 0.08)',
                             drawBorder: false
                         },
                         title: { 
                             display: true, 
                             text: 'Percentage (%)',
-                            color: '#64748B',
+                            color: '#CBD5E1',
                             font: { family: 'Inter', weight: 500 }
                         } 
                     },
                     x: {
                         ticks: {
-                            color: '#64748B',
+                            color: '#94A3B8',
                             font: { family: 'Inter' }
                         },
                         grid: {
@@ -290,7 +290,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: { 
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#1E293B',
+                        backgroundColor: '#0F1F38',
+                        borderColor: 'rgba(255, 107, 53, 0.4)',
+                        borderWidth: 1,
                         titleFont: { family: 'Inter' },
                         bodyFont: { family: 'Inter' }
                     }
@@ -301,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var canvas = document.getElementById('performanceChart');
         var ctx = canvas.getContext('2d');
         ctx.font = "14px Inter, sans-serif";
-        ctx.fillStyle = "#64748B";
+        ctx.fillStyle = "#94A3B8";
         ctx.textAlign = "center";
         ctx.fillText("Complete an exam or assignment to see performance trends", canvas.width / 2 || 150, canvas.height / 2 || 75);
     }
@@ -313,10 +315,10 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: ['Completed', 'Pending/Absent'],
             datasets: [{
                 data: [{{ completed_count }}, {{ pending_count }}],
-                backgroundColor: ['#22C55E', '#E63946'],
+                backgroundColor: ['#22C55E', '#EF4444'],
                 hoverOffset: 6,
                 borderWidth: 2,
-                borderColor: '#ffffff'
+                borderColor: '#0F1F38'
             }]
         },
         options: {
@@ -326,12 +328,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 legend: { 
                     position: 'bottom',
                     labels: {
-                        color: '#64748B',
+                        color: '#94A3B8',
                         font: { family: 'Inter' }
                     }
                 },
                 tooltip: {
-                    backgroundColor: '#1E293B',
+                    backgroundColor: '#0F1F38',
+                    borderColor: 'rgba(255, 107, 53, 0.4)',
+                    borderWidth: 1,
                     titleFont: { family: 'Inter' },
                     bodyFont: { family: 'Inter' }
                 }
