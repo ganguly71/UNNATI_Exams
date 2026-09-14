@@ -2,14 +2,6 @@
 {% block content %}
 <div class="portal-stage-container">
 
-        <!-- Institutional Identification Header -->
-        <div class="portal-header-badge mb-3 text-center">
-            <span class="portal-live-dot"></span>
-            <span class="portal-inst-name">COOCH BEHAR GOVERNMENT ENGINEERING COLLEGE</span>
-            <span class="portal-badge-sep">•</span>
-            <span class="portal-node-name">EXAMINATION ASSESSMENT NETWORK</span>
-        </div>
-
         <!-- Main Centerpiece Glass Console -->
         <div class="portal-glass-card">
 
@@ -38,7 +30,7 @@
                         UNNATI <span class="title-orange">Exams</span>
                     </h1>
                     <p class="portal-motto">
-                        Continuous Academic Evaluation &amp; Proctored Assessment
+                        <strong>COOCH BEHAR GOVERNMENT ENGINEERING COLLEGE</strong>
                     </p>
                 </div>
             </div>
@@ -59,9 +51,8 @@
             <!-- Student Authentication Pane -->
             <div class="portal-pane active" id="pane-student">
                 <div class="pane-meta mb-3">
-                    <span class="pane-badge badge-orange">AUTHENTICATION // CANDIDATE</span>
-                    <p class="pane-instruction">Provide your assigned university roll identifier to enter the
-                        examination session.</p>
+                    
+                    <p class="pane-instruction">Provide your university roll number to enter the examination session.</p>
                 </div>
 
                 <!-- In-Pane Alert Banner for Student Login Errors -->
@@ -100,7 +91,7 @@
                     </div>
 
                     <button type="submit" id="btn-student-login-submit" class="portal-btn btn-orange w-100">
-                        <span>LAUNCH EXAMINATION SESSION</span>
+                        <span>ACCESS EXAMINATION PORTAL</span>
                         <i class="bi bi-arrow-right-short ms-2"></i>
                     </button>
                 </form>
@@ -119,9 +110,7 @@
             <!-- Faculty & Admin Authentication Pane -->
             <div class="portal-pane" id="pane-faculty">
                 <div class="pane-meta mb-3">
-                    <span class="pane-badge badge-navy">AUTHENTICATION // ADMINISTRATIVE</span>
-                    <p class="pane-instruction">Restricted access for authorized departmental evaluators and
-                        invigilators.</p>
+                    <p class="pane-instruction">Restricted access for authorized departmental administrators only.</p>
                 </div>
 
                 <form action="{{ url_for('main.login_faculty') }}" method="POST">
@@ -154,34 +143,14 @@
                     </div>
 
                     <button type="submit" class="portal-btn btn-navy w-100">
-                        <span>ENTER FACULTY DIRECTORATE</span>
+                        <span>ACCESS ADMINISTRATIVE CONTROLS</span>
                         <i class="bi bi-arrow-right-short ms-2"></i>
                     </button>
                 </form>
             </div>
 
         </div>
-
-        <!-- Floating Quick Specs & Security Badges (Below Console) -->
-        <div class="portal-chips-row mt-4">
-            <div class="portal-chip">
-                <i class="bi bi-shield-check text-orange me-2"></i>
-                <span>Monitored Proctoring</span>
-            </div>
-            <div class="portal-chip">
-                <i class="bi bi-clock-history text-orange me-2"></i>
-                <span>Server-Synchronized Chrono</span>
-            </div>
-            <div class="portal-chip">
-                <i class="bi bi-bar-chart-fill text-orange me-2"></i>
-                <span>Granular Performance Audit</span>
-            </div>
-        </div>
-
-        <!-- Footer Notice -->
-        <div class="portal-footer-advisory mt-4 text-center">
-            <span>Academic Integrity Code Enforced · Unauthorized Tab Switching is Monitored and Logged</span>
-        </div>
+       
 
     </div>
 

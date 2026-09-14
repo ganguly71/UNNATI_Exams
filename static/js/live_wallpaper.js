@@ -16,7 +16,7 @@
     let animId = null;
     let time = 0;
 
-    // Interactive pointer state
+    // Non-interactive pointer state
     const pointer = {
         x: -9999,
         y: -9999,
@@ -27,63 +27,63 @@
         intensity: 0
     };
 
-    // Interactive click shockwaves / ripples
+    // Interactive click shockwaves / ripples (Disabled)
     const ripples = [];
 
     // Technical Grid Configuration
-    const GRID_SPACING = 68;
+    const GRID_SPACING = 80;
     const gridPoints = [];
 
-    // Formal Harmonic Wave Layers
+    // Formal Harmonic Wave Layers (Tone down opacity & amplitude for subtle, elegant background)
     const waveLayers = [
         {
             baseYRatio: 0.72,
-            amplitude: 45,
-            frequency: 0.0018,
-            speed: 0.016,
-            color: 'rgba(255, 107, 53, 0.42)',
-            fillGrad: ['rgba(255, 107, 53, 0.06)', 'transparent'],
-            lineWidth: 2.0,
+            amplitude: 22,
+            frequency: 0.0012,
+            speed: 0.008,
+            color: 'rgba(255, 107, 53, 0.16)',
+            fillGrad: ['rgba(255, 107, 53, 0.025)', 'transparent'],
+            lineWidth: 1.2,
             phaseOffset: 0
         },
         {
             baseYRatio: 0.68,
-            amplitude: 38,
-            frequency: 0.0022,
-            speed: -0.012,
-            color: 'rgba(247, 147, 30, 0.35)',
-            fillGrad: ['rgba(247, 147, 30, 0.04)', 'transparent'],
-            lineWidth: 1.6,
+            amplitude: 18,
+            frequency: 0.0015,
+            speed: -0.006,
+            color: 'rgba(247, 147, 30, 0.12)',
+            fillGrad: ['rgba(247, 147, 30, 0.015)', 'transparent'],
+            lineWidth: 1.0,
             phaseOffset: 1.8
         },
         {
             baseYRatio: 0.60,
-            amplitude: 52,
-            frequency: 0.0014,
-            speed: 0.009,
-            color: 'rgba(59, 130, 246, 0.32)',
-            fillGrad: ['rgba(59, 130, 246, 0.05)', 'transparent'],
-            lineWidth: 1.8,
+            amplitude: 25,
+            frequency: 0.0010,
+            speed: 0.005,
+            color: 'rgba(59, 130, 246, 0.14)',
+            fillGrad: ['rgba(59, 130, 246, 0.02)', 'transparent'],
+            lineWidth: 1.1,
             phaseOffset: 3.4
         },
         {
             baseYRatio: 0.54,
-            amplitude: 32,
-            frequency: 0.0026,
-            speed: -0.018,
-            color: 'rgba(255, 128, 66, 0.28)',
-            fillGrad: ['rgba(255, 107, 53, 0.03)', 'transparent'],
-            lineWidth: 1.4,
+            amplitude: 16,
+            frequency: 0.0018,
+            speed: -0.008,
+            color: 'rgba(255, 128, 66, 0.10)',
+            fillGrad: ['rgba(255, 107, 53, 0.01)', 'transparent'],
+            lineWidth: 0.9,
             phaseOffset: 5.1
         },
         {
             baseYRatio: 0.45,
-            amplitude: 26,
-            frequency: 0.0019,
-            speed: 0.014,
-            color: 'rgba(148, 163, 184, 0.22)',
-            fillGrad: ['rgba(148, 163, 184, 0.03)', 'transparent'],
-            lineWidth: 1.2,
+            amplitude: 14,
+            frequency: 0.0012,
+            speed: 0.006,
+            color: 'rgba(148, 163, 184, 0.08)',
+            fillGrad: ['rgba(148, 163, 184, 0.01)', 'transparent'],
+            lineWidth: 0.8,
             phaseOffset: 2.2
         }
     ];
@@ -93,18 +93,18 @@
 
     function initDatumMarkers() {
         datumMarkers.length = 0;
-        const count = Math.floor((width * height) / 45000);
+        const count = Math.floor((width * height) / 75000);
         for (let i = 0; i < count; i++) {
             datumMarkers.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
                 type: Math.floor(Math.random() * 4), // 0: crosshair, 1: corner brackets, 2: circle reticle, 3: diamond
-                size: 6 + Math.random() * 6,
-                baseAlpha: 0.15 + Math.random() * 0.25,
-                alpha: 0.2,
+                size: 5 + Math.random() * 4,
+                baseAlpha: 0.06 + Math.random() * 0.08,
+                alpha: 0.08,
                 pulseOffset: Math.random() * Math.PI * 2,
-                driftVx: (Math.random() - 0.5) * 0.15,
-                driftVy: (Math.random() - 0.5) * 0.15
+                driftVx: (Math.random() - 0.5) * 0.05,
+                driftVy: (Math.random() - 0.5) * 0.05
             });
         }
     }
@@ -140,66 +140,7 @@
         initDatumMarkers();
     }
 
-    // Pointer Event Listeners with SVG Parallax
-    const svgWavesLayer = document.querySelector('.formal-svg-waves-layer');
-    const reticleTR = document.querySelector('.reticle-top-right');
-    const reticleBL = document.querySelector('.reticle-bottom-left');
-
-    window.addEventListener('mousemove', (e) => {
-        pointer.targetX = e.clientX;
-        pointer.targetY = e.clientY;
-        pointer.active = true;
-
-        // Subtly parallax shift SVG wave ribbons and reticles
-        if (svgWavesLayer) {
-            const normX = ((e.clientX / (width || window.innerWidth)) - 0.5) * 24;
-            const normY = ((e.clientY / (height || window.innerHeight)) - 0.5) * 10;
-            svgWavesLayer.style.transform = `translate3d(${normX}px, ${normY}px, 0)`;
-        }
-
-        if (reticleTR) {
-            const shiftX = ((e.clientX / (width || window.innerWidth)) - 0.5) * -16;
-            const shiftY = ((e.clientY / (height || window.innerHeight)) - 0.5) * -16;
-            reticleTR.style.transform = `translate3d(${shiftX}px, ${shiftY}px, 0)`;
-        }
-
-        if (reticleBL) {
-            const shiftX = ((e.clientX / (width || window.innerWidth)) - 0.5) * 14;
-            const shiftY = ((e.clientY / (height || window.innerHeight)) - 0.5) * 14;
-            reticleBL.style.transform = `translate3d(${shiftX}px, ${shiftY}px, 0)`;
-        }
-    }, { passive: true });
-
-    window.addEventListener('mouseleave', () => {
-        pointer.active = false;
-        pointer.targetX = -9999;
-        pointer.targetY = -9999;
-    });
-
-    window.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 0) {
-            pointer.targetX = e.touches[0].clientX;
-            pointer.targetY = e.touches[0].clientY;
-            pointer.active = true;
-        }
-    }, { passive: true });
-
-    window.addEventListener('touchend', () => {
-        pointer.active = false;
-    });
-
-    // Click Shockwave
-    window.addEventListener('click', (e) => {
-        ripples.push({
-            x: e.clientX,
-            y: e.clientY,
-            radius: 8,
-            maxRadius: Math.max(width, height) * 0.75,
-            speed: 8,
-            strength: 32,
-            alpha: 0.7
-        });
-    });
+    // Pointer / mouse interactive listeners removed for a clean, non-interactive formal backdrop.
 
     // Draw Formal Technical Grid
     // Draw Formal Technical Grid

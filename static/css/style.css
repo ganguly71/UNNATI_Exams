@@ -393,7 +393,7 @@ a.logout-btn:hover,
   position: relative;
   min-height: 100vh;
   width: 100%;
-  background: radial-gradient(circle at 50% 20%, #0E203C 0%, #070F1C 65%, #040810 100%);
+  background: radial-gradient(circle at 50% 20%, #0B192E 0%, #070F1C 65%, #040810 100%);
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
@@ -420,32 +420,32 @@ a.logout-btn:hover,
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
-  filter: blur(90px);
+  filter: blur(100px);
   z-index: 1;
 }
 
 .orb-orange-top {
-  top: -80px;
+  top: -100px;
   left: 15%;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(255, 107, 53, 0.22) 0%, transparent 70%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 107, 53, 0.08) 0%, transparent 70%);
 }
 
 .orb-navy-bottom {
-  bottom: -120px;
+  bottom: -140px;
   right: 12%;
-  width: 550px;
-  height: 550px;
-  background: radial-gradient(circle, rgba(42, 82, 152, 0.35) 0%, transparent 70%);
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(42, 82, 152, 0.14) 0%, transparent 70%);
 }
 
 .orb-orange-right {
   top: 35%;
-  right: -80px;
-  width: 380px;
-  height: 380px;
-  background: radial-gradient(circle, rgba(247, 147, 30, 0.16) 0%, transparent 70%);
+  right: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(247, 147, 30, 0.06) 0%, transparent 70%);
 }
 
 .ambient-grid-overlay {
@@ -492,8 +492,8 @@ a.logout-btn:hover,
   right: 35px;
   width: 260px;
   height: 260px;
-  opacity: 0.55;
-  animation: rotateReticle 160s linear infinite;
+  opacity: 0.22;
+  animation: rotateReticle 180s linear infinite;
 }
 
 .reticle-bottom-left {
@@ -501,8 +501,8 @@ a.logout-btn:hover,
   left: 35px;
   width: 200px;
   height: 200px;
-  opacity: 0.45;
-  animation: rotateReticleReverse 140s linear infinite;
+  opacity: 0.18;
+  animation: rotateReticleReverse 160s linear infinite;
 }
 
 @keyframes rotateReticle {
